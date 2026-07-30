@@ -1,0 +1,25 @@
+# 系统文件
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# 编辑器临时文件
+*~
+*.swp
+*.swo
+*.tmp
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 未来可能的构建产物
+build/
+dist/
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env

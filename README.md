@@ -14,7 +14,7 @@
 | **目标** | 功能复现版博宇四方管理端（公司架构/商品管理/数据统计/CRM/运营管理）+ 国内场景（台风封港）13RP 决策演示 |
 | **技术栈** | Java 21 + Spring Boot 3.x + Vue 3 + Element Plus + MySQL 8 + Redis + ECharts + Docker Compose |
 | **团队** | 6 人（P0 精简编制） |
-| **版本** | V0.4 |
+| **版本** | V0.3 |
 
 ---
 

@@ -262,7 +262,7 @@ PLAN_SELECTED ←──确认方案── GAMING ←──加入博弈── OPT
 
 ### 3.6 模拟数据生成器（MockDataService.java）
 
-从"三工厂 × 6 指标"改为"订单 / 物流 / 库存 / 港口 四域"：
+MockDataService 覆盖"订单 / 物流 / 库存 / 港口"四域：
 
 ```java
 @Service

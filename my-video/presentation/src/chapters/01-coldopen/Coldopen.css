@@ -1,0 +1,261 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * Chapter 01 · coldopen — 停电危机
+ * 独立 CSS 前缀 .cd-。颜色 / 字体全走主题 token，动画时长按内容自由。
+ * neon-cyber: 深海军底 + 电光青 accent + 玫红 glow 签名。
+ * ───────────────────────────────────────────────────────────────────── */
+
+.cd-scene {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
+}
+
+.cd-em { color: var(--accent); }
+
+.cd-corner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  position: absolute;
+  top: var(--space-7);
+  left: var(--stage-pad-x);
+  z-index: 3;
+}
+
+.cd-foot {
+  position: absolute;
+  bottom: var(--space-7);
+  right: var(--stage-pad-x);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  z-index: 3;
+}
+.cd-arrow {
+  display: inline-block;
+  color: var(--accent);
+  font-size: 18px;
+  animation: cd-nudge 2.4s var(--ease-soft) infinite;
+}
+@keyframes cd-nudge {
+  0%, 100% { transform: translateX(0); }
+  50%      { transform: translateX(6px); }
+}
+
+/* ─── step 0 · 凌晨两点 ─── */
+.cd-cover {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-5);
+  padding-top: var(--space-7);
+}
+.cd-kicker {
+  letter-spacing: 0.22em;
+}
+.cd-hero {
+  font-size: clamp(96px, 8.5vw, 168px);
+  line-height: 1.02;
+  margin: 0;
+  max-width: 16ch;
+}
+.cd-hero .serif-cn {
+  font-size: inherit;
+  line-height: inherit;
+}
+.cd-hero-sm {
+  font-size: clamp(72px, 6.4vw, 124px);
+}
+
+.cd-clock {
+  position: absolute;
+  right: var(--stage-pad-x);
+  bottom: calc(var(--space-7) * 2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  opacity: 0.85;
+}
+.cd-clock-dial {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  background: var(--surface-2);
+  box-shadow: var(--card-shadow);
+}
+.cd-tick {
+  position: absolute;
+  width: 2px;
+  height: 8px;
+  background: var(--text-mute);
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
+}
+.cd-tick.t12 { transform: translate(-1px, -75px); }
+.cd-tick.t3  { transform: translate(-1px, -75px) rotate(90deg); }
+.cd-tick.t6  { transform: translate(-1px, -75px) rotate(180deg); }
+.cd-tick.t9  { transform: translate(-1px, -75px) rotate(270deg); }
+.cd-hand {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: 50% 100%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent-glow);
+  border-radius: 2px;
+}
+.cd-hand-h {
+  width: 4px;
+  height: 40px;
+  transform: translate(-2px, -40px) rotate(60deg); /* ~2 点方向 */
+}
+.cd-hand-m {
+  width: 3px;
+  height: 56px;
+  transform: translate(-1.5px, -56px) rotate(180deg); /* 12 点方向 */
+}
+.cd-clock-label {
+  color: var(--text-mute);
+  letter-spacing: 0.18em;
+}
+
+/* ─── step 1 · SVG 工厂熄灯 ─── */
+.cd-cover-factory {
+  justify-content: flex-start;
+  gap: var(--space-7);
+}
+.cd-factory {
+  width: 100%;
+  max-width: 760px;
+  margin-top: var(--space-5);
+}
+.cd-window {
+  animation: cd-window-out 900ms var(--ease-quart) forwards;
+  animation-delay: calc(var(--i, 0) * 140ms);
+}
+.cd-window-a { --i: 0; }
+.cd-window-b { --i: 1; }
+.cd-window-c { --i: 2; }
+.cd-window-d { --i: 3; }
+.cd-window-e { --i: 4; }
+.cd-window-f { --i: 5; }
+.cd-window-g { --i: 6; }
+.cd-window-h { --i: 7; }
+.cd-window-i { --i: 8; }
+.cd-window-j { --i: 9; }
+.cd-window-k { --i: 10; }
+.cd-window-l { --i: 11; }
+@keyframes cd-window-out {
+  to { opacity: 0.06; fill: var(--text-faint); }
+}
+
+.cd-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  align-self: flex-start;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--accent-glow);
+  border-radius: var(--r-sm);
+  color: var(--accent);
+  letter-spacing: 0.18em;
+  box-shadow: var(--card-shadow);
+}
+.cd-alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+  animation: cd-blink 1s var(--ease-soft) infinite;
+}
+@keyframes cd-blink {
+  50% { opacity: 0.25; }
+}
+
+/* ─── step 2 · 冲击数字 ─── */
+.cd-nums {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(48px, 6vw, 110px);
+  padding-top: var(--space-9);
+}
+.cd-num-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  opacity: 0;
+  animation: cd-num-in 700ms var(--ease-overshoot) forwards;
+}
+.cd-num-1 { animation-delay: 100ms; }
+.cd-num-2 { animation-delay: 420ms; }
+.cd-num-3 { animation-delay: 740ms; }
+@keyframes cd-num-in {
+  0%   { opacity: 0; transform: translateY(28px) scale(0.9); }
+  60%  { opacity: 1; transform: translateY(-6px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.cd-num-value {
+  font-size: clamp(110px, 9.5vw, 190px);
+  line-height: 0.95;
+  color: var(--accent);
+  text-shadow: 0 0 22px var(--accent-glow);
+}
+.cd-num-unit {
+  letter-spacing: 0.2em;
+}
+
+.cd-nums-caption {
+  display: flex;
+  justify-content: center;
+  padding-bottom: var(--space-9);
+}
+.cd-nums-line {
+  font-size: clamp(30px, 2.6vw, 48px);
+  color: var(--text-2);
+}
+
+/* ─── step 3 · 全乱了 ─── */
+.cd-close { padding: 0; }
+.cd-close-ring {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--accent-glow);
+  border-radius: 50%;
+  transform: scale(0.6);
+  opacity: 0;
+  animation: cd-ring-pulse 1800ms var(--ease-quart) forwards;
+  pointer-events: none;
+}
+@keyframes cd-ring-pulse {
+  0%   { transform: scale(0.55); opacity: 0.9; border-radius: 50%; }
+  100% { transform: scale(3.2); opacity: 0; border-radius: 50%; }
+}
+.cd-close-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-5);
+  padding: var(--stage-pad-y) var(--stage-pad-x);
+}
+.cd-close-quote {
+  font-size: clamp(84px, 7.4vw, 148px);
+  line-height: 1.05;
+  max-width: 14ch;
+}
+.cd-close-sub {
+  letter-spacing: 0.18em;
+  color: var(--text-mute);
+}

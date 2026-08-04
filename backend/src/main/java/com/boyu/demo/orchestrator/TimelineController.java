@@ -26,7 +26,7 @@ public class TimelineController {
     private static final double STEP = 100.0 / 240;
     private static final int TOTAL_PATHS = 342;
     private static final List<String> PATH_POOL = List.of(
-            "改港青岛+铁路转运", "空运关键物料", "启用备选供应商",
+            "切换备用供应商", "启用战略库存+调整生产节拍", "替代材料方案",
             "宁波→青岛航线重构", "苏州仓库存调拨", "天津港分流方案");
     private static final Random RANDOM = new Random();
 

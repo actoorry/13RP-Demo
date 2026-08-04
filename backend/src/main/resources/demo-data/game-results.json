@@ -1,116 +1,116 @@
 {
   "factors": [
     {
-      "id": "congestion",
-      "name": "港口拥堵加剧（青岛/天津也受影响）",
+      "id": "backup_capacity",
+      "name": "备用供应商产能有限",
       "defaultChecked": true
     },
     {
-      "id": "competitor",
-      "name": "竞争对手抢订舱位",
+      "id": "competitor_grab",
+      "name": "同行抢购同源材料",
       "defaultChecked": true
     },
     {
-      "id": "typhoon_extend",
-      "name": "台风路径延长（封港 7 天）",
+      "id": "recovery_unknown",
+      "name": "缺货恢复时间不确定",
       "defaultChecked": false
     },
     {
-      "id": "customer_defer",
-      "name": "客户接受延期（同意 10 天）",
+      "id": "customer_substitute",
+      "name": "客户接受替代材料",
       "defaultChecked": false
     }
   ],
   "results": {
     "none": {
-      "P1": 65,
-      "P2": 78,
-      "P3": 45
-    },
-    "congestion": {
-      "P1": 62,
-      "P2": 61,
-      "P3": 48
-    },
-    "competitor": {
-      "P1": 60,
-      "P2": 64,
-      "P3": 46
-    },
-    "typhoon_extend": {
-      "P1": 55,
-      "P2": 70,
-      "P3": 44
-    },
-    "customer_defer": {
       "P1": 68,
-      "P2": 72,
-      "P3": 58
-    },
-    "congestion,competitor": {
-      "P1": 69,
       "P2": 61,
-      "P3": 51
+      "P3": 56
     },
-    "congestion,typhoon_extend": {
-      "P1": 52,
-      "P2": 53,
-      "P3": 47
-    },
-    "congestion,customer_defer": {
-      "P1": 65,
-      "P2": 55,
-      "P3": 61
-    },
-    "competitor,typhoon_extend": {
-      "P1": 50,
-      "P2": 56,
-      "P3": 45
-    },
-    "competitor,customer_defer": {
-      "P1": 63,
-      "P2": 58,
-      "P3": 59
-    },
-    "typhoon_extend,customer_defer": {
+    "backup_capacity": {
       "P1": 58,
-      "P2": 64,
+      "P2": 63,
       "P3": 57
     },
-    "congestion,competitor,typhoon_extend": {
-      "P1": 59,
-      "P2": 53,
-      "P3": 50
-    },
-    "congestion,competitor,customer_defer": {
-      "P1": 72,
-      "P2": 55,
-      "P3": 64
-    },
-    "congestion,typhoon_extend,customer_defer": {
-      "P1": 55,
-      "P2": 47,
-      "P3": 60
-    },
-    "competitor,typhoon_extend,customer_defer": {
-      "P1": 53,
-      "P2": 50,
+    "competitor_grab": {
+      "P1": 60,
+      "P2": 62,
       "P3": 58
     },
-    "congestion,competitor,typhoon_extend,customer_defer": {
+    "recovery_unknown": {
       "P1": 62,
-      "P2": 47,
+      "P2": 55,
+      "P3": 60
+    },
+    "customer_substitute": {
+      "P1": 66,
+      "P2": 63,
+      "P3": 72
+    },
+    "backup_capacity,competitor_grab": {
+      "P1": 52,
+      "P2": 64,
+      "P3": 59
+    },
+    "backup_capacity,recovery_unknown": {
+      "P1": 55,
+      "P2": 58,
+      "P3": 62
+    },
+    "backup_capacity,customer_substitute": {
+      "P1": 54,
+      "P2": 65,
+      "P3": 74
+    },
+    "competitor_grab,recovery_unknown": {
+      "P1": 58,
+      "P2": 57,
       "P3": 63
+    },
+    "competitor_grab,customer_substitute": {
+      "P1": 57,
+      "P2": 64,
+      "P3": 75
+    },
+    "recovery_unknown,customer_substitute": {
+      "P1": 63,
+      "P2": 60,
+      "P3": 78
+    },
+    "backup_capacity,competitor_grab,recovery_unknown": {
+      "P1": 50,
+      "P2": 56,
+      "P3": 65
+    },
+    "backup_capacity,competitor_grab,customer_substitute": {
+      "P1": 51,
+      "P2": 66,
+      "P3": 80
+    },
+    "backup_capacity,recovery_unknown,customer_substitute": {
+      "P1": 55,
+      "P2": 62,
+      "P3": 82
+    },
+    "competitor_grab,recovery_unknown,customer_substitute": {
+      "P1": 58,
+      "P2": 63,
+      "P3": 84
+    },
+    "backup_capacity,competitor_grab,recovery_unknown,customer_substitute": {
+      "P1": 48,
+      "P2": 60,
+      "P3": 86
     }
   },
   "before": {
-    "P1": 65,
-    "P2": 78,
-    "P3": 45
+    "P1": 68,
+    "P2": 61,
+    "P3": 56
   },
   "after": {
-    "P1": 69,
-    "P2": 61,
-    "P3": 51
+    "P1": 52,
+    "P2": 64,
+    "P3": 59
   }
 }

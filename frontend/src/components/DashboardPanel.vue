@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useDemoStore } from '../stores/demo'
-import { STATUS_COLOR, STATUS_LABEL, type PortStatus } from '../constants/demo'
+import { STATUS_COLOR, STATUS_LABEL, type SupplierStatus } from '../constants/demo'
 
 const store = useDemoStore()
 
@@ -9,18 +9,18 @@ const deliveryRate = computed(() =>
   Math.max(0, Math.min(100, Math.round(store.deliveryRate))),
 )
 const deliveryIsLow = computed(() => store.deliveryRate < 80)
-const ports = computed(() => store.ports.filter((p) => p.kind === 'port'))
+const suppliers = computed(() => store.suppliers.filter((p) => p.kind === 'supplier'))
 const inventoryEntries = computed(() => Object.entries(store.inventory))
 const invMax = computed(() =>
   Math.max(1, ...Object.values(store.inventory).map((v) => v.qty)),
 )
 
 function statusColor(status: string): string {
-  return STATUS_COLOR[(status as PortStatus)] ?? STATUS_COLOR.NORMAL
+  return STATUS_COLOR[(status as SupplierStatus)] ?? STATUS_COLOR.NORMAL
 }
 
 function statusLabel(status: string): string {
-  return STATUS_LABEL[(status as PortStatus)] ?? status
+  return STATUS_LABEL[(status as SupplierStatus)] ?? status
 }
 </script>
 
@@ -58,9 +58,9 @@ function statusLabel(status: string): string {
     </section>
 
     <section class="panel-section">
-      <div class="panel-section-title">港口状态</div>
+      <div class="panel-section-title">供应商状态</div>
       <ul class="port-list">
-        <li v-for="p in ports" :key="p.code" class="port-item">
+        <li v-for="p in suppliers" :key="p.code" class="port-item">
           <span class="port-dot" :style="{ background: statusColor(p.status) }"></span>
           <span class="port-name">{{ p.name }}</span>
           <span

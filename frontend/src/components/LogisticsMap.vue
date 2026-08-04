@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref, shallowRef, watch } from 'vue'
 import * as echarts from 'echarts'
 import { useDemoStore } from '../stores/demo'
-import { PORT_DEFS, ROUTES, STATUS_COLOR } from '../constants/demo'
+import { SUPPLY_NODES, ROUTES, STATUS_COLOR } from '../constants/demo'
 
 const store = useDemoStore()
 const chartEl = ref<HTMLDivElement | null>(null)
@@ -11,12 +11,10 @@ const hasMap = ref(false)
 
 let resizeObserver: ResizeObserver | null = null
 
-const defs = Object.fromEntries(PORT_DEFS.map((d) => [d.code, d]))
+const defs = Object.fromEntries(SUPPLY_NODES.map((d) => [d.code, d]))
 
-function typhoonActive(): boolean {
-  return store.ports.some(
-    (p) => (p.code === 'NINGBO' || p.code === 'SHANGHAI') && p.status === 'CLOSED',
-  )
+function shortageActive(): boolean {
+  return store.suppliers.some((p) => p.code === 'BAOTOU' && p.status === 'SHORTAGE')
 }
 
 function nodeStatusColor(status: string): string {
@@ -37,9 +35,9 @@ async function loadMap() {
   render()
 }
 
-function buildPortData() {
-  return store.ports
-    .filter((p) => p.kind === 'port')
+function buildSupplierData() {
+  return store.suppliers
+    .filter((p) => p.kind === 'supplier')
     .map((p) => ({
       name: p.name,
       value: [p.lng, p.lat, 1] as [number, number, number],
@@ -48,8 +46,8 @@ function buildPortData() {
 }
 
 function buildNodeData() {
-  return store.ports
-    .filter((p) => p.kind !== 'port')
+  return store.suppliers
+    .filter((p) => p.kind !== 'supplier')
     .map((p) => ({
       name: p.name,
       value: [p.lng, p.lat] as [number, number],
@@ -58,14 +56,14 @@ function buildNodeData() {
 }
 
 function buildRouteData() {
-  const typhoon = typhoonActive()
+  const shortage = shortageActive()
   const result: { coords: [number, number][]; lineStyle: Record<string, unknown> }[] = []
   for (const r of ROUTES) {
     const from = defs[r.from]
     const to = defs[r.to]
     if (!from || !to) continue
-    const alt = typhoon && !!r.alternative
-    const dimmed = typhoon && (r.from === 'SHANGHAI' || r.to === 'SHANGHAI')
+    const alt = shortage && !!r.alternative
+    const dimmed = shortage && (r.from === 'BAOTOU' || r.to === 'BAOTOU')
     result.push({
       coords: [
         [from.lng, from.lat] as [number, number],
@@ -82,10 +80,10 @@ function buildRouteData() {
 }
 
 function buildFallbackOption(): echarts.EChartsOption {
-  const points = store.ports.map((p) => ({
+  const points = store.suppliers.map((p) => ({
     name: p.name,
     value: [p.lng, p.lat] as [number, number],
-    itemStyle: { color: p.kind === 'port' ? nodeStatusColor(p.status) : '#4a90d9' },
+    itemStyle: { color: p.kind === 'supplier' ? nodeStatusColor(p.status) : '#4a90d9' },
   }))
   return {
     backgroundColor: 'transparent',
@@ -123,7 +121,7 @@ function buildFallbackOption(): echarts.EChartsOption {
 
 function buildOption(): echarts.EChartsOption {
   if (!hasMap.value) return buildFallbackOption()
-  const portData = buildPortData()
+  const supplierData = buildSupplierData()
   const nodeData = buildNodeData()
   const routeData = buildRouteData()
 
@@ -145,17 +143,17 @@ function buildOption(): echarts.EChartsOption {
     },
     series: [
       {
-        name: '港口',
+        name: '供应商',
         type: 'effectScatter',
         coordinateSystem: 'geo',
         zlevel: 2,
         symbolSize: 13,
         rippleEffect: { scale: 3.2, brushType: 'stroke' },
         label: { show: true, position: 'right', formatter: '{b}', color: '#8b949e', fontSize: 11 },
-        data: portData,
+        data: supplierData,
       },
       {
-        name: '仓库/基地',
+        name: '工厂/基地',
         type: 'scatter',
         coordinateSystem: 'geo',
         zlevel: 2,
@@ -201,7 +199,7 @@ onUnmounted(() => {
 })
 
 watch(
-  () => store.ports,
+  () => store.suppliers,
   () => render(),
   { deep: true },
 )
@@ -213,8 +211,8 @@ watch(
     <div v-if="!hasMap" class="map-fallback-tip">地图资源不可用，已降级为坐标散点视图</div>
     <div class="map-legend">
       <span class="legend-item"><i class="legend-dot" style="background:#00d4aa"></i>正常</span>
-      <span class="legend-item"><i class="legend-dot" style="background:#ff4757"></i>封港</span>
-      <span class="legend-item"><i class="legend-dot" style="background:#ffa940"></i>拥堵</span>
+      <span class="legend-item"><i class="legend-dot" style="background:#ff4757"></i>缺货</span>
+      <span class="legend-item"><i class="legend-dot" style="background:#ffa940"></i>紧张</span>
     </div>
   </div>
 </template>

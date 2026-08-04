@@ -49,13 +49,13 @@ public class DemoController {
         return triggerEvent(str(body, "eventType"), intVal(body, "duration", 5));
     }
 
-    /** WebSocket 便捷重载：携带 eventType 与 duration（封港持续天数）。 */
+    /** WebSocket 便捷重载：携带 eventType 与 duration（供应商缺货持续天数）。 */
     public Map<String, Object> triggerEvent(String eventType, int duration) {
         try {
-            mockDataService.injectTyphoon(duration);
+            mockDataService.injectSupplierShortage(duration);
             stateMachine.transitionTo(DemoPhase.EVENT_INJECTED);
             Map<String, Object> m = ok();
-            m.put("eventType", (eventType == null || eventType.isBlank()) ? "typhoon_port_closure" : eventType);
+            m.put("eventType", (eventType == null || eventType.isBlank()) ? "supplier_shortage" : eventType);
             m.put("duration", duration);
             return m;
         } catch (IllegalStateException e) {

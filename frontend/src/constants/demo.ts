@@ -1,46 +1,42 @@
-// 13RP 决策演示共享常量：港口/节点坐标、物流路线、阶段标签、偏好选项
-export type PortStatus = 'NORMAL' | 'CLOSED' | 'CONGESTED'
+// 13RP 决策演示共享常量：供应网络节点、供应路线、阶段标签、偏好选项
+export type SupplierStatus = 'NORMAL' | 'SHORTAGE' | 'TIGHT'
 
-export type PortKind = 'port' | 'warehouse' | 'base'
+export type SupplyNodeKind = 'supplier' | 'factory' | 'base'
 
-export interface PortDef {
+export interface SupplyNode {
   code: string
   name: string
   lng: number
   lat: number
-  kind: PortKind
+  kind: SupplyNodeKind
 }
 
-export const PORT_DEFS: PortDef[] = [
-  { code: 'NINGBO', name: '宁波舟山港', lng: 121.87, lat: 29.97, kind: 'port' },
-  { code: 'SHANGHAI', name: '上海港', lng: 121.48, lat: 31.23, kind: 'port' },
-  { code: 'QINGDAO', name: '青岛港', lng: 120.32, lat: 36.07, kind: 'port' },
-  { code: 'TIANJIN', name: '天津港', lng: 117.72, lat: 38.98, kind: 'port' },
-  { code: 'GUANGZHOU', name: '广州港', lng: 113.47, lat: 23.1, kind: 'port' },
-  { code: 'SUZHOU', name: '苏州仓', lng: 120.58, lat: 31.3, kind: 'warehouse' },
-  { code: 'GANZHOU', name: '赣州基地', lng: 114.93, lat: 25.83, kind: 'base' },
+export const SUPPLY_NODES: SupplyNode[] = [
+  { code: 'BAOTOU', name: '包头北方稀土矿业', lng: 109.84, lat: 40.66, kind: 'supplier' },
+  { code: 'GANZHOU', name: '赣州中重稀土', lng: 114.93, lat: 25.83, kind: 'supplier' },
+  { code: 'NINGBO', name: '宁波东方磁材', lng: 121.55, lat: 29.88, kind: 'supplier' },
+  { code: 'SUZHOU', name: '苏州应用工厂', lng: 120.58, lat: 31.3, kind: 'factory' },
+  { code: 'GUANGZHOU', name: '广州深加工基地', lng: 113.47, lat: 23.1, kind: 'base' },
 ]
 
-export const PORT_NAMES: Record<string, string> = {
-  NINGBO: '宁波舟山港',
-  SHANGHAI: '上海港',
-  QINGDAO: '青岛港',
-  TIANJIN: '天津港',
-  GUANGZHOU: '广州港',
-  SUZHOU: '苏州仓',
-  GANZHOU: '赣州基地',
+export const NODE_NAMES: Record<string, string> = {
+  BAOTOU: '包头北方稀土矿业',
+  GANZHOU: '赣州中重稀土',
+  NINGBO: '宁波东方磁材',
+  SUZHOU: '苏州应用工厂',
+  GUANGZHOU: '广州深加工基地',
 }
 
-export const STATUS_COLOR: Record<PortStatus, string> = {
+export const STATUS_COLOR: Record<SupplierStatus, string> = {
   NORMAL: '#00d4aa',
-  CLOSED: '#ff4757',
-  CONGESTED: '#ffa940',
+  SHORTAGE: '#ff4757',
+  TIGHT: '#ffa940',
 }
 
-export const STATUS_LABEL: Record<PortStatus, string> = {
+export const STATUS_LABEL: Record<SupplierStatus, string> = {
   NORMAL: '正常',
-  CLOSED: '封港',
-  CONGESTED: '拥堵',
+  SHORTAGE: '缺货',
+  TIGHT: '紧张',
 }
 
 export interface RouteDef {
@@ -52,12 +48,10 @@ export interface RouteDef {
 }
 
 export const ROUTES: RouteDef[] = [
-  { id: 'nb-qd', from: 'NINGBO', to: 'QINGDAO', label: '宁波→青岛', alternative: true },
-  { id: 'nb-tj', from: 'NINGBO', to: 'TIANJIN', label: '宁波→天津', alternative: true },
-  { id: 'sh-sz', from: 'SHANGHAI', to: 'SUZHOU', label: '上海→苏州' },
-  { id: 'nb-sh', from: 'NINGBO', to: 'SHANGHAI', label: '宁波→上海' },
-  { id: 'qd-tj', from: 'QINGDAO', to: 'TIANJIN', label: '青岛→天津' },
-  { id: 'gz-nb', from: 'GUANGZHOU', to: 'NINGBO', label: '广州→宁波' },
+  { id: 'bt-sz', from: 'BAOTOU', to: 'SUZHOU', label: '包头→苏州' },
+  { id: 'gz-sz', from: 'GANZHOU', to: 'SUZHOU', label: '赣州→苏州', alternative: true },
+  { id: 'nb-sz', from: 'NINGBO', to: 'SUZHOU', label: '宁波→苏州', alternative: true },
+  { id: 'sz-gz', from: 'SUZHOU', to: 'GUANGZHOU', label: '苏州→广州' },
   { id: 'gz-gz', from: 'GANZHOU', to: 'GUANGZHOU', label: '赣州→广州', alternative: true },
 ]
 

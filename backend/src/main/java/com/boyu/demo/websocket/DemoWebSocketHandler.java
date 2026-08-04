@@ -18,8 +18,9 @@ import java.util.Map;
 
 /**
  * /ws/demo 原生 WebSocket 处理器。
- * <p>收到 JSON {@code {action, ...}} 分发到 {@link DemoController} 的同名便捷重载
- * （String/List 参数），避免 WS 端拼 Map。⚠️ 每个 action 必须有 case，
+ * <p>收到 JSON {@code {action, payload:{...}}}（前端 useWebSocket.send 格式）分发到
+ * {@link DemoController} 的同名便捷重载（String/List 参数），参数统一从 payload 子节点
+ * 提取；payload 缺失/非对象时回退根节点（兼容平铺消息）。⚠️ 每个 action 必须有 case，
  * 缺了前端点按钮会报"未知动作"。
  */
 @Component
@@ -73,12 +74,18 @@ public class DemoWebSocketHandler extends TextWebSocketHandler {
     }
 
     private Map<String, Object> dispatch(String action, JsonNode root) {
+        // 前端 useWebSocket.send 格式为 {action, payload:{...}}，参数在 payload 子对象；
+        // payload 缺失/非对象时回退根节点（兼容平铺消息）。
+        JsonNode p = root.path("payload");
+        if (p.isMissingNode() || p.isNull() || !p.isObject()) {
+            p = root;
+        }
         return switch (action) {
-            case "trigger-event" -> demoController.triggerEvent(text(root, "eventType"), root.path("duration").asInt(5));
+            case "trigger-event" -> demoController.triggerEvent(text(p, "eventType"), p.path("duration").asInt(5));
             case "start-simulation" -> demoController.startSimulation();
-            case "start-optimization" -> demoController.startOptimization(text(root, "preference"));
-            case "start-gaming" -> demoController.startGaming(stringList(root, "factors"));
-            case "confirm-plan" -> demoController.confirmPlan(text(root, "planId"));
+            case "start-optimization" -> demoController.startOptimization(text(p, "preference"));
+            case "start-gaming" -> demoController.startGaming(stringList(p, "factors"));
+            case "confirm-plan" -> demoController.confirmPlan(text(p, "planId"));
             case "fast-forward" -> demoController.fastForward();
             case "skip-simulation" -> demoController.skipSimulation();
             case "reset" -> demoController.reset();

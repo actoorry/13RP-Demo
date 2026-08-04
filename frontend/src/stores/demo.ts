@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ElMessage } from 'element-plus'
-import { PORT_DEFS, PORT_NAMES } from '../constants/demo'
+import { SUPPLY_NODES, NODE_NAMES } from '../constants/demo'
 
 export type DemoPhase =
   | 'INIT'
@@ -12,13 +12,13 @@ export type DemoPhase =
   | 'PLAN_SELECTED'
   | 'DONE'
 
-export interface PortInfo {
+export interface SupplierInfo {
   code: string
   name: string
   status: string
   lng: number
   lat: number
-  kind: 'port' | 'warehouse' | 'base'
+  kind: 'supplier' | 'factory' | 'base'
 }
 
 export interface SolutionPlan {
@@ -73,11 +73,14 @@ export interface WsMessage {
   orderDeliveryRate?: number
   deliveryRate?: number
   openOrders?: number
+  /** 后端看板推送字段名为 ports（节点含 id/name/status/kind）；状态变量仍命名为 suppliers */
   ports?: unknown
   inventory?: unknown
   planId?: unknown
   planName?: unknown
   type?: string
+  supplierId?: unknown
+  supplier?: unknown
   portId?: unknown
   port?: unknown
   action?: string
@@ -86,8 +89,8 @@ export interface WsMessage {
   payload?: unknown
 }
 
-function defaultPorts(): PortInfo[] {
-  return PORT_DEFS.map((p) => ({ ...p, status: 'NORMAL' }))
+function defaultSuppliers(): SupplierInfo[] {
+  return SUPPLY_NODES.map((p) => ({ ...p, status: 'NORMAL' }))
 }
 
 export const useDemoStore = defineStore('demo', {
@@ -97,8 +100,8 @@ export const useDemoStore = defineStore('demo', {
     progressMsg: '',
     deliveryRate: 96.5,
     openOrders: 1200,
-    ports: defaultPorts() as PortInfo[],
-    portNames: { ...PORT_NAMES } as Record<string, string>,
+    suppliers: defaultSuppliers() as SupplierInfo[],
+    supplierNames: { ...NODE_NAMES } as Record<string, string>,
     inventory: {} as Record<string, InventoryEntry>,
     solutions: [] as SolutionPlan[],
     gameResults: null as GameResults | null,
@@ -134,7 +137,7 @@ export const useDemoStore = defineStore('demo', {
       }
     },
 
-    /** dashboard：订单/港口/库存实时看板 */
+    /** dashboard：订单/供应商/库存实时看板 */
     applyDashboard(msg: WsMessage) {
       const rate = msg.orderDeliveryRate ?? msg.deliveryRate
       if (typeof rate === 'number' && Number.isFinite(rate)) {
@@ -143,20 +146,25 @@ export const useDemoStore = defineStore('demo', {
       if (typeof msg.openOrders === 'number' && Number.isFinite(msg.openOrders)) {
         this.openOrders = msg.openOrders
       }
-      if (msg.ports) this.applyPorts(msg.ports)
+      if (msg.ports) this.applySuppliers(msg.ports)
       if (msg.inventory) this.applyInventory(msg.inventory)
     },
 
-    /** 归一化港口状态：兼容 数组 或  code->status 映射 两种后端形状 */
-    applyPorts(raw: unknown) {
-      const byCode = new Map(this.ports.map((p) => [p.code, p]))
+    /** 归一化供应商状态：兼容 数组 或  code->status 映射 两种后端形状；数组节点结构为 {id/name/status/kind} */
+    applySuppliers(raw: unknown) {
+      const byCode = new Map(this.suppliers.map((p) => [p.code, p]))
       if (Array.isArray(raw)) {
         for (const item of raw) {
           if (!item || typeof item !== 'object') continue
           const obj = item as Record<string, unknown>
           const code = String(obj.code ?? obj.id ?? '').toUpperCase()
           const found = byCode.get(code)
-          if (found) found.status = String(obj.status ?? 'NORMAL').toUpperCase()
+          if (!found) continue
+          found.status = String(obj.status ?? 'NORMAL').toUpperCase()
+          if (typeof obj.name === 'string' && obj.name) found.name = obj.name
+          if (obj.kind === 'supplier' || obj.kind === 'factory' || obj.kind === 'base') {
+            found.kind = obj.kind
+          }
         }
       } else if (raw && typeof raw === 'object') {
         const map = raw as Record<string, unknown>
@@ -203,12 +211,15 @@ export const useDemoStore = defineStore('demo', {
       if (this.phase === 'INIT') this.resetData()
     },
 
-    /** twin-event：PORT_ALERT 直接置红；ROUTE_HIGHLIGHT 由地图依据 ports 自行高亮 */
+    /** twin-event：SUPPLIER_ALERT 直接置缺货；ROUTE_HIGHLIGHT 由地图依据 suppliers 自行高亮 */
     applyTwinEvent(msg: WsMessage) {
-      if (msg.type === 'PORT_ALERT') {
-        const code = String(msg.portId ?? msg.port ?? '').toUpperCase()
-        const found = this.ports.find((p) => p.code === code)
-        if (found) found.status = 'CLOSED'
+      // 兼容新旧事件类型：后端若仍沿用 PORT_ALERT 也能命中
+      if (msg.type === 'SUPPLIER_ALERT' || msg.type === 'PORT_ALERT') {
+        const code = String(
+          msg.supplierId ?? msg.portId ?? msg.supplier ?? msg.port ?? '',
+        ).toUpperCase()
+        const found = this.suppliers.find((p) => p.code === code)
+        if (found) found.status = 'SHORTAGE'
       }
     },
 

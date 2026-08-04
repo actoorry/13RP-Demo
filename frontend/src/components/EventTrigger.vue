@@ -27,21 +27,21 @@ function confirmInject() {
   <section v-if="!isInjected" class="event-panel fade-up">
     <h3 class="panel-title">事件注入</h3>
     <div class="intro">
-      模拟一次一级物流中断事件，驱动 13RP 决策闭环：看板报警 → 推演 → 寻优 → 博弈 → 降维输出。
+      模拟一次一级供应中断事件，驱动 13RP 决策闭环：看板报警 → 推演 → 寻优 → 博弈 → 降维输出。
     </div>
     <el-button type="danger" class="inject-btn" @click="openDialog">
-      ⚡ 注入台风事件
+      ⚡ 注入供应商缺货事件
     </el-button>
 
-    <el-dialog v-model="dialogVisible" title="注入台风事件" width="420px" align-center>
-      <el-form label-width="80px">
+    <el-dialog v-model="dialogVisible" title="注入供应商缺货事件" width="420px" align-center>
+      <el-form label-width="90px">
         <el-form-item label="事件类型">
-          <span>台风"海燕"登陆华东</span>
+          <span>包头北方稀土矿业突发停产</span>
         </el-form-item>
-        <el-form-item label="影响港口">
-          <span>宁波舟山港 / 上海港</span>
+        <el-form-item label="影响供应商">
+          <span>包头北方稀土矿业</span>
         </el-form-item>
-        <el-form-item label="封港时长">
+        <el-form-item label="缺货时长">
           <el-radio-group v-model="duration">
             <el-radio-button :value="3">3 天</el-radio-button>
             <el-radio-button :value="5">5 天</el-radio-button>
@@ -57,9 +57,9 @@ function confirmInject() {
   </section>
 
   <section v-else class="alert-panel fade-up">
-    <h3 class="panel-title" style="color: var(--color-alert)">⚠ 一级物流中断</h3>
+    <h3 class="panel-title" style="color: var(--color-alert)">⚠ 一级供应中断</h3>
     <div class="alert-box shake">
-      <div class="alert-msg">检测到台风"海燕"封港事件，宁波舟山港 / 上海港已关闭。</div>
+      <div class="alert-msg">检测到供应商缺货事件，包头北方稀土矿业已停止供货。</div>
       <div class="alert-sub">订单交付率持续下降，建议立即启动 7RP 方案推演。</div>
     </div>
     <el-button type="primary" class="inject-btn" @click="emit('start-simulation')">

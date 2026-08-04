@@ -35,7 +35,7 @@ const rightPanel = computed(() => {
 })
 
 function handleStart(duration: number) {
-  send('trigger-event', { eventType: 'typhoon_port_closure', duration })
+  send('trigger-event', { eventType: 'supplier_shortage', duration })
 }
 function handleStartSimulation() {
   send('start-simulation')

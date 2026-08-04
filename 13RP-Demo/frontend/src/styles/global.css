@@ -1,0 +1,88 @@
+:root {
+  --bg: #0d1117;
+  --panel: #161b22;
+  --panel-border: #30363d;
+  --primary: #00d4aa;
+  --alert: #ff4757;
+  --data-blue: #4a90d9;
+  --warn: #ffa940;
+  --text: #e6edf3;
+  --text-dim: #8b949e;
+  --mono: 'JetBrains Mono', Consolas, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body, #app {
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'PingFang SC', 'Microsoft YaHei', '思源黑体', sans-serif;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+/* 三屏布局 */
+.demo-layout {
+  display: grid;
+  grid-template-columns: 350px 1fr 400px;
+  grid-template-rows: 1fr 36px;
+  height: 100vh;
+  gap: 8px;
+  padding: 8px;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-title {
+  font-size: 13px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel-title .badge {
+  background: rgba(0, 212, 170, 0.15);
+  color: var(--primary);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.mono { font-family: var(--mono); }
+
+.blink { animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: 0.3; } }
+
+.shake { animation: shake 0.4s; }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+
+.fade-up { animation: fadeUp 0.5s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Element Plus 主题覆盖 */
+.el-button--primary {
+  --el-button-bg-color: var(--primary);
+  --el-button-border-color: var(--primary);
+  --el-button-hover-bg-color: #00e6b8;
+  --el-button-hover-border-color: #00e6b8;
+}

@@ -1,0 +1,34 @@
+{
+  "total_paths": 342,
+  "simulated": 342,
+  "perturbations": 1000,
+  "top_paths": [
+    {
+      "id": "P1",
+      "name": "改港青岛 + 铁路转运",
+      "desc": "宁波→青岛转港，青岛港铁路转运至苏州仓，再分拨",
+      "cost": 120,
+      "carbon": 45,
+      "delivery": 7,
+      "risk_score": 0.22
+    },
+    {
+      "id": "P2",
+      "name": "空运关键物料",
+      "desc": "稀土·镝关键批次走空运，上海虹桥/浦东机场直飞",
+      "cost": 340,
+      "carbon": 210,
+      "delivery": 2,
+      "risk_score": 0.15
+    },
+    {
+      "id": "P3",
+      "name": "启用备选供应商",
+      "desc": "内蒙古/赣州备选供应商应急供货，产能 500 吨",
+      "cost": 80,
+      "carbon": 12,
+      "delivery": 10,
+      "risk_score": 0.38
+    }
+  ]
+}

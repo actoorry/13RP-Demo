@@ -1,0 +1,40 @@
+{
+  "plans": [
+    {
+      "id": "P1",
+      "name": "改港青岛 + 铁路转运",
+      "metrics": { "cost": 120, "carbon": 45, "delivery": 7, "risk": 0.22 },
+      "preferenceRank": { "delivery_first": 2, "balanced": 1, "cost_first": 2 },
+      "execSteps": [
+        "向船运公司预订宁波→青岛转港舱位",
+        "青岛港铁路转运调度（中铁快运）",
+        "苏州仓接货 + 分拨计划",
+        "客户交付计划更新"
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "空运关键物料",
+      "metrics": { "cost": 340, "carbon": 210, "delivery": 2, "risk": 0.15 },
+      "preferenceRank": { "delivery_first": 1, "balanced": 2, "cost_first": 3 },
+      "execSteps": [
+        "预订航空货运舱位（虹桥→青岛）",
+        "稀土·镝关键批次出库",
+        "机场快运报关",
+        "客户紧急交付确认"
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "启用备选供应商",
+      "metrics": { "cost": 80, "carbon": 12, "delivery": 10, "risk": 0.38 },
+      "preferenceRank": { "delivery_first": 3, "balanced": 3, "cost_first": 1 },
+      "execSteps": [
+        "备选供应商询价 + 产能确认",
+        "签订应急采购合同（500 吨）",
+        "公路运输调度",
+        "原订单延期补偿方案"
+      ]
+    }
+  ]
+}

@@ -74,7 +74,7 @@ public class DemoWebSocketHandler extends TextWebSocketHandler {
 
     private Map<String, Object> dispatch(String action, JsonNode root) {
         return switch (action) {
-            case "trigger-event" -> demoController.triggerEvent();
+            case "trigger-event" -> demoController.triggerEvent(text(root, "eventType"), root.path("duration").asInt(5));
             case "start-simulation" -> demoController.startSimulation();
             case "start-optimization" -> demoController.startOptimization(text(root, "preference"));
             case "start-gaming" -> demoController.startGaming(stringList(root, "factors"));

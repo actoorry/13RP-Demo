@@ -11,9 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 决策演示 REST 入口。
@@ -41,14 +46,18 @@ public class DemoController {
 
     @PostMapping("/trigger-event")
     public Map<String, Object> triggerEvent(@RequestBody(required = false) Map<String, Object> body) {
-        return triggerEvent();
+        return triggerEvent(str(body, "eventType"), intVal(body, "duration", 5));
     }
 
-    public Map<String, Object> triggerEvent() {
+    /** WebSocket 便捷重载：携带 eventType 与 duration（封港持续天数）。 */
+    public Map<String, Object> triggerEvent(String eventType, int duration) {
         try {
-            mockDataService.injectTyphoon();
+            mockDataService.injectTyphoon(duration);
             stateMachine.transitionTo(DemoPhase.EVENT_INJECTED);
-            return ok();
+            Map<String, Object> m = ok();
+            m.put("eventType", (eventType == null || eventType.isBlank()) ? "typhoon_port_closure" : eventType);
+            m.put("duration", duration);
+            return m;
         } catch (IllegalStateException e) {
             return error(e.getMessage());
         }
@@ -60,8 +69,12 @@ public class DemoController {
     }
 
     public Map<String, Object> startSimulation() {
-        if (stateMachine.getPhase() != DemoPhase.EVENT_INJECTED) {
-            return error("当前状态不可启动推演：" + stateMachine.getPhase());
+        DemoPhase phase = stateMachine.getPhase();
+        if (phase == DemoPhase.SIMULATING) {
+            return error("推演已在进行中");
+        }
+        if (phase != DemoPhase.EVENT_INJECTED) {
+            return error("当前状态不可启动推演：" + phase);
         }
         timeline.prepare();
         stateMachine.transitionTo(DemoPhase.SIMULATING);
@@ -127,6 +140,9 @@ public class DemoController {
     }
 
     public Map<String, Object> fastForward() {
+        if (stateMachine.getPhase() != DemoPhase.SIMULATING) {
+            return error("当前未在推演");
+        }
         timeline.fastForward();
         return ok();
     }
@@ -138,10 +154,15 @@ public class DemoController {
 
     public Map<String, Object> skipSimulation() {
         if (stateMachine.getPhase() != DemoPhase.SIMULATING) {
-            return error("当前状态不可跳过推演：" + stateMachine.getPhase());
+            return error("当前未在推演");
         }
-        timeline.skipSimulation();
-        stateMachine.transitionTo(DemoPhase.SIMULATION_DONE, "已跳过推演，直接完成");
+        try {
+            timeline.skipSimulation();
+            stateMachine.transitionTo(DemoPhase.SIMULATION_DONE, "已跳过推演，直接完成");
+        } catch (IllegalStateException e) {
+            // tick 恰在 skip 前自动跑完 → phase 已非 SIMULATING，幂等返回
+            return error(e.getMessage());
+        }
         return ok();
     }
 
@@ -182,11 +203,18 @@ public class DemoController {
     }
 
     @GetMapping("/game-results")
-    public Map<String, Object> gameResults() {
+    public Map<String, Object> gameResults(@RequestParam(value = "factors", required = false) String factors) {
         try {
+            Map<String, Object> root = precomputed.gameResults();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> before = (Map<String, Object>) root.get("before");
+            Map<String, Object> hit = resolveGameHit(root, factors);
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("ok", true);
-            m.putAll(precomputed.gameResults());
+            m.put("factors", root.get("factors"));
+            m.put("before", before);
+            m.put("after", hit);
+            m.put("results", buildGameRows(before, hit));
             return m;
         } catch (Exception e) {
             return error(e.getMessage());
@@ -217,12 +245,115 @@ public class DemoController {
         }
     }
 
+    // ---------------- game-results 查询辅助（F2：factors 参数生效） ----------------
+
+    /**
+     * 解析 factors 参数（'+' / ',' / 空白 分隔——查询串中的 '+' 会被容器解码为空格），
+     * 去空、去重后按字母序排序返回。
+     */
+    private static List<String> parseFactors(String factorsParam) {
+        if (factorsParam == null || factorsParam.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(factorsParam.split("[+,\\s]+"))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .sorted()
+                .toList();
+    }
+
+    /** 从预计算数据解析命中的胜率表：未传 factors / 解析为空 / key 不存在 → before 基线。 */
+    private Map<String, Object> resolveGameHit(Map<String, Object> root, String factorsParam) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> results = (Map<String, Object>) root.get("results");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> before = (Map<String, Object>) root.get("before");
+        List<String> selected = parseFactors(factorsParam);
+        if (selected.isEmpty()) {
+            return before;
+        }
+        for (String key : gameKeys(root, selected)) {
+            Object hit = results.get(key);
+            if (hit instanceof Map<?, ?> hm) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> hitMap = (Map<String, Object>) hm;
+                return hitMap;
+            }
+        }
+        return before;
+    }
+
+    /**
+     * 候选 key：主键按 factors 声明序 + ','（与预计算 JSON 的键一致，如 congestion,competitor），
+     * 并附 '+' / 字母序变体，兼容前端 sort().join('+') 与未来数据格式调整。
+     */
+    private List<String> gameKeys(Map<String, Object> root, List<String> selected) {
+        List<String> declared = gameFactorIds(root);
+        List<String> byDecl = selected.stream()
+                .sorted(Comparator.comparingInt(declared::indexOf))
+                .toList();
+        List<String> byAlpha = new ArrayList<>(selected);
+        Set<String> keys = new LinkedHashSet<>();
+        keys.add(String.join(",", byDecl));
+        keys.add(String.join("+", byDecl));
+        keys.add(String.join(",", byAlpha));
+        keys.add(String.join("+", byAlpha));
+        return new ArrayList<>(keys);
+    }
+
+    /** 从 game-results 的 factors 数组按声明序提取 id 列表。 */
+    private static List<String> gameFactorIds(Map<String, Object> root) {
+        List<String> ids = new ArrayList<>();
+        Object factors = root.get("factors");
+        if (factors instanceof List<?> list) {
+            for (Object o : list) {
+                if (o instanceof Map<?, ?> factor) {
+                    Object id = factor.get("id");
+                    if (id != null) {
+                        ids.add(String.valueOf(id));
+                    }
+                }
+            }
+        }
+        return ids;
+    }
+
+    /** before / hit 两张 {P1,P2,P3} 胜率表 → 前端 GameResultRow[]（保持前端兼容）。 */
+    private static List<Map<String, Object>> buildGameRows(Map<String, Object> before, Map<String, Object> hit) {
+        List<Map<String, Object>> rows = new ArrayList<>();
+        for (Map.Entry<String, Object> e : before.entrySet()) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("planId", e.getKey());
+            row.put("winRateBefore", e.getValue());
+            row.put("winRateAfter", hit.getOrDefault(e.getKey(), e.getValue()));
+            rows.add(row);
+        }
+        return rows;
+    }
+
     // ---------------- 响应组装 ----------------
 
     /** null 安全地从 body Map 提取字符串字段（缺字段/显式 null 均返回 null）。 */
     private static String str(Map<String, Object> body, String key) {
         Object v = body == null ? null : body.get(key);
         return v == null ? null : String.valueOf(v);
+    }
+
+    /** null 安全地从 body Map 提取 int 字段（缺字段/非法值返回默认值）。 */
+    private static int intVal(Map<String, Object> body, String key, int def) {
+        Object v = body == null ? null : body.get(key);
+        if (v instanceof Number n) {
+            return n.intValue();
+        }
+        if (v instanceof String s) {
+            try {
+                return Integer.parseInt(s.trim());
+            } catch (NumberFormatException ignore) {
+                // 非法数字落回默认值
+            }
+        }
+        return def;
     }
 
     private Map<String, Object> ok() {

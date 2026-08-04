@@ -40,6 +40,9 @@ public class MockDataService {
     private volatile double deliveryRate = 96.0;
     private volatile boolean typhoonActive = false;
 
+    /** 台风封港持续天数（天）：F4 接收存储，供后续影响交付率下降速率（本任务不改渐变逻辑）。 */
+    private volatile int typhoonDurationDays = 5;
+
     /** 港口域：5 港口状态。 */
     private final Map<String, PortStatus> ports = new ConcurrentHashMap<>();
 
@@ -70,17 +73,29 @@ public class MockDataService {
         ws.broadcast("dashboard", tick);
     }
 
-    /** 注入台风封港：宁波/上海港口置 CLOSED。 */
-    public void injectTyphoon() {
+    /** 注入台风封港：宁波/上海港口置 CLOSED，并记录持续天数。 */
+    public void injectTyphoon(int duration) {
         typhoonActive = true;
+        typhoonDurationDays = duration;
         ports.put("NINGBO", PortStatus.CLOSED);
         ports.put("SHANGHAI", PortStatus.CLOSED);
-        log.debug("Typhoon injected: NINGBO/SHANGHAI -> CLOSED");
+        log.debug("Typhoon injected: NINGBO/SHANGHAI -> CLOSED, duration={}d", typhoonDurationDays);
+    }
+
+    /** 便捷重载：默认封港 5 天。 */
+    public void injectTyphoon() {
+        injectTyphoon(5);
+    }
+
+    /** 台风封港持续天数（天）。 */
+    public int getTyphoonDurationDays() {
+        return typhoonDurationDays;
     }
 
     /** 恢复初始状态。 */
     public void reset() {
         typhoonActive = false;
+        typhoonDurationDays = 5;
         deliveryRate = 96.0;
         for (String id : PORT_IDS) {
             ports.put(id, PortStatus.NORMAL);

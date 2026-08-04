@@ -20,7 +20,7 @@ async function load(factors?: string[]) {
 
 function initChecked() {
   const fs = store.gameResults?.factors ?? []
-  const explicit = fs.filter((f) => f.checked).map((f) => f.id)
+  const explicit = fs.filter((f) => f.defaultChecked).map((f) => f.id)
   checkedFactors.value = explicit.length ? explicit : fs.slice(0, 2).map((f) => f.id)
 }
 

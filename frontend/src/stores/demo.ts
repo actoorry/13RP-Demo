@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ElMessage } from 'element-plus'
 import { PORT_DEFS, PORT_NAMES } from '../constants/demo'
 
 export type DemoPhase =
@@ -31,7 +32,8 @@ export interface SolutionPlan {
 export interface GameFactor {
   id: string
   name: string
-  checked?: boolean
+  /** 后端 game-results.json 字段名是 defaultChecked，控制默认勾选 */
+  defaultChecked?: boolean
 }
 
 export interface GameResultRow {
@@ -55,6 +57,12 @@ export interface Instruction {
   falsifiableCondition?: string
 }
 
+/** 品类库存条目：数量 + 单位（对齐后端 [{category, qty, unit}]） */
+export interface InventoryEntry {
+  qty: number
+  unit: string
+}
+
 export interface WsMessage {
   channel?: string
   phase?: string
@@ -72,6 +80,10 @@ export interface WsMessage {
   type?: string
   portId?: unknown
   port?: unknown
+  action?: string
+  ok?: boolean
+  error?: string
+  payload?: unknown
 }
 
 function defaultPorts(): PortInfo[] {
@@ -87,7 +99,7 @@ export const useDemoStore = defineStore('demo', {
     openOrders: 1200,
     ports: defaultPorts() as PortInfo[],
     portNames: { ...PORT_NAMES } as Record<string, string>,
-    inventory: {} as Record<string, number>,
+    inventory: {} as Record<string, InventoryEntry>,
     solutions: [] as SolutionPlan[],
     gameResults: null as GameResults | null,
     instructions: [] as Instruction[],
@@ -102,6 +114,24 @@ export const useDemoStore = defineStore('demo', {
       if (channel === 'dashboard') this.applyDashboard(msg)
       else if (channel === 'demo-state') this.applyDemoState(msg)
       else if (channel === 'twin-event') this.applyTwinEvent(msg)
+      else if (channel === 'demo-action') this.applyDemoAction(msg)
+    },
+
+    /** demo-action：动作回执确认。ok=false 时警告并提示用户 */
+    applyDemoAction(msg: WsMessage) {
+      // 兼容平铺 {ok,error} 与嵌套 {payload:{ok,error}} 两种后端形状
+      const nested =
+        msg.payload && typeof msg.payload === 'object'
+          ? (msg.payload as Record<string, unknown>)
+          : null
+      const ok = msg.ok ?? (nested ? nested.ok : undefined)
+      const error = msg.error ?? (nested ? nested.error : undefined)
+      if (ok === false) {
+        const detail = typeof error === 'string' && error ? error : '未知错误'
+        const label = typeof msg.action === 'string' && msg.action ? `[${msg.action}] ` : ''
+        console.warn(`[demo-action] 操作失败${label}`, detail)
+        ElMessage.warning(`操作失败：${detail}`)
+      }
     },
 
     /** dashboard：订单/港口/库存实时看板 */
@@ -137,9 +167,27 @@ export const useDemoStore = defineStore('demo', {
       }
     },
 
+    /** 归一化库存：兼容后端 数组 [{category,qty,unit}] 与 映射 {category:qty} 两种形状 */
     applyInventory(raw: unknown) {
       if (!raw || typeof raw !== 'object') return
-      this.inventory = { ...this.inventory, ...(raw as Record<string, number>) }
+      if (Array.isArray(raw)) {
+        for (const item of raw) {
+          if (!item || typeof item !== 'object') continue
+          const obj = item as Record<string, unknown>
+          const name = obj.category ?? obj.name
+          const qty = obj.qty ?? obj.value
+          if (name == null || typeof qty !== 'number' || !Number.isFinite(qty)) continue
+          const unit = typeof obj.unit === 'string' ? obj.unit : ''
+          this.inventory[String(name)] = { qty, unit }
+        }
+      } else {
+        const map = raw as Record<string, unknown>
+        for (const [name, qty] of Object.entries(map)) {
+          if (typeof qty === 'number' && Number.isFinite(qty)) {
+            this.inventory[name] = { qty, unit: '' }
+          }
+        }
+      }
     },
 
     /** demo-state：状态机 phase / 进度 / 进度消息 */

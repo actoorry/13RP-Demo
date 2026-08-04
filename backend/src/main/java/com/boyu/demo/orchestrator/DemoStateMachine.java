@@ -1,6 +1,8 @@
 package com.boyu.demo.orchestrator;
 
 import com.boyu.demo.websocket.WebSocketSessionManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumMap;
@@ -19,6 +21,8 @@ import java.util.Set;
  */
 @Component
 public class DemoStateMachine {
+
+    private static final Logger log = LoggerFactory.getLogger(DemoStateMachine.class);
 
     /** 合法迁移表。 */
     private static final Map<DemoPhase, Set<DemoPhase>> TRANSITIONS = new EnumMap<>(DemoPhase.class);
@@ -56,7 +60,9 @@ public class DemoStateMachine {
         if (allowed == null || !allowed.contains(target)) {
             throw new IllegalStateException("非法状态迁移：" + phase + " -> " + target);
         }
+        DemoPhase from = this.phase;
         this.phase = target;
+        log.info("状态迁移: {} -> {}", from, target);
         broadcastState(message);
         return phase;
     }
@@ -73,7 +79,9 @@ public class DemoStateMachine {
 
     /** 重开一场新演示：直接回到 INIT 并广播（不走迁移表）。 */
     public synchronized void resetForNewDemo() {
+        DemoPhase from = this.phase;
         this.phase = DemoPhase.INIT;
+        log.info("状态迁移: {} -> {}", from, DemoPhase.INIT);
         broadcastState("演示已重置，等待事件注入");
     }
 

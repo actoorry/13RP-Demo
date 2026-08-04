@@ -11,7 +11,9 @@ const deliveryRate = computed(() =>
 const deliveryIsLow = computed(() => store.deliveryRate < 80)
 const ports = computed(() => store.ports.filter((p) => p.kind === 'port'))
 const inventoryEntries = computed(() => Object.entries(store.inventory))
-const invMax = computed(() => Math.max(1, ...Object.values(store.inventory)))
+const invMax = computed(() =>
+  Math.max(1, ...Object.values(store.inventory).map((v) => v.qty)),
+)
 
 function statusColor(status: string): string {
   return STATUS_COLOR[(status as PortStatus)] ?? STATUS_COLOR.NORMAL
@@ -79,10 +81,12 @@ function statusLabel(status: string): string {
           <span class="inv-bar">
             <span
               class="inv-bar-fill"
-              :style="{ width: Math.round((value / invMax) * 100) + '%' }"
+              :style="{ width: Math.round((value.qty / invMax) * 100) + '%' }"
             ></span>
           </span>
-          <span class="inv-value mono">{{ value }}</span>
+          <span class="inv-value mono">
+            {{ value.qty }}<span v-if="value.unit" class="inv-unit">{{ value.unit }}</span>
+          </span>
         </li>
       </ul>
       <div v-else class="empty-tip">等待数据推送…</div>
@@ -201,5 +205,11 @@ function statusLabel(status: string): string {
   text-align: right;
   font-size: 12px;
   color: var(--color-text);
+}
+
+.inv-unit {
+  margin-left: 2px;
+  font-size: 11px;
+  color: var(--color-text-muted);
 }
 </style>

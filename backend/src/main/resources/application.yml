@@ -4,11 +4,18 @@ server:
 spring:
   application:
     name: rd13-demo
+  threads:
+    virtual:
+      enabled: true
   jackson:
     # REST 返回字段统一 snake_case（与前端对接约定）
     property-naming-strategy: SNAKE_CASE
     serialization:
       write-dates-as-timestamps: false
+
+demo:
+  # 看板数据推送间隔（毫秒），MockDataService.generateAndPush 使用
+  data-push-interval-ms: 1000
 
 logging:
   level:

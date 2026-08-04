@@ -1,88 +1,124 @@
 <script setup lang="ts">
-// 13RP 决策演示——P0 深色占位页
-// 后续任务将在此挂载 4RP 看板 / 6RP 孪生 / 决策交互面板
+import { computed, onMounted, watch } from 'vue'
+import { useDemoStore } from './stores/demo'
+import { useWebSocket } from './composables/useWebSocket'
+import DashboardPanel from './components/DashboardPanel.vue'
+import LogisticsMap from './components/LogisticsMap.vue'
+import EventTrigger from './components/EventTrigger.vue'
+import SimulationProgress from './components/SimulationProgress.vue'
+import PlanCards from './components/PlanCards.vue'
+import GamePanel from './components/GamePanel.vue'
+import InstructionList from './components/InstructionList.vue'
+import StatusBar from './components/StatusBar.vue'
+
+const store = useDemoStore()
+const { connected, send } = useWebSocket()
+
+const rightPanel = computed(() => {
+  switch (store.phase) {
+    case 'EVENT_INJECTED':
+      return 'event'
+    case 'SIMULATING':
+    case 'SIMULATION_DONE':
+      return 'progress'
+    case 'OPTIMIZING':
+      return 'plans'
+    case 'GAMING':
+      return 'game'
+    case 'PLAN_SELECTED':
+    case 'DONE':
+      return 'instruction'
+    case 'INIT':
+    default:
+      return 'event'
+  }
+})
+
+function handleStart(duration: number) {
+  send('trigger-event', { eventType: 'typhoon_port_closure', duration })
+}
+function handleStartSimulation() {
+  send('start-simulation')
+}
+function handleFastForward() {
+  send('fast-forward')
+}
+function handleSkip() {
+  send('skip-simulation')
+}
+function handleStartOptimization() {
+  send('start-optimization')
+}
+function handleStartGaming() {
+  send('start-gaming')
+}
+function handleConfirm(planId: string) {
+  store.planId = planId
+  send('confirm-plan', { planId })
+}
+function handleReset() {
+  send('reset')
+}
+
+function restoreByPhase() {
+  const phase = store.phase
+  if (['OPTIMIZING', 'GAMING', 'PLAN_SELECTED', 'DONE'].includes(phase) && !store.solutions.length) {
+    store.fetchSolutions()
+  }
+  if (['GAMING', 'PLAN_SELECTED', 'DONE'].includes(phase) && !store.gameResults) {
+    store.fetchGameResults()
+  }
+  if (['PLAN_SELECTED', 'DONE'].includes(phase)) {
+    store.fetchInstructions(store.planId || 'P1')
+  }
+}
+
+// 刷新恢复：拉取 state 后按 phase 补拉数据（见已知坑 #8）
+onMounted(async () => {
+  await store.fetchState()
+  restoreByPhase()
+})
+
+// 运行时 phase 推进：按需补拉方案/博弈/指令数据
+watch(
+  () => store.phase,
+  (phase) => {
+    if (phase === 'OPTIMIZING' && !store.solutions.length) store.fetchSolutions()
+    if (phase === 'GAMING' && !store.gameResults) store.fetchGameResults()
+    if ((phase === 'PLAN_SELECTED' || phase === 'DONE') && !store.instructions.length) {
+      store.fetchInstructions(store.planId || 'P1')
+    }
+  },
+)
 </script>
 
 <template>
-  <div class="placeholder-page">
-    <div class="grid-overlay" aria-hidden="true"></div>
+  <div class="app-shell">
+    <aside class="left-panel panel">
+      <DashboardPanel />
+    </aside>
 
-    <main class="content">
-      <div class="badge">13RP · 博宇宙十三维决策操作系统</div>
-      <h1 class="title">13RP 决策演示</h1>
-      <p class="subtitle">多宇宙资源规划与决策系统 —— P0 阶段</p>
-
-      <div class="status-row">
-        <el-tag type="success" effect="dark">骨架就绪</el-tag>
-        <el-tag type="info" effect="dark">Vue3 + Vite6 + Element Plus</el-tag>
-      </div>
+    <main class="center-panel">
+      <LogisticsMap />
     </main>
 
-    <footer class="footer">V0.3</footer>
+    <aside class="right-panel panel">
+      <EventTrigger
+        v-if="rightPanel === 'event'"
+        @start="handleStart"
+        @start-simulation="handleStartSimulation"
+      />
+      <SimulationProgress
+        v-else-if="rightPanel === 'progress'"
+        @fast-forward="handleFastForward"
+        @skip="handleSkip"
+        @start-optimization="handleStartOptimization"
+      />
+      <PlanCards v-else-if="rightPanel === 'plans'" @start-gaming="handleStartGaming" />
+      <GamePanel v-else-if="rightPanel === 'game'" @confirm="handleConfirm" />
+      <InstructionList v-else-if="rightPanel === 'instruction'" @reset="handleReset" />
+    </aside>
+
+    <StatusBar :connected="connected" />
   </div>
 </template>
-
-<style scoped>
-.placeholder-page {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  background: #0d1117;
-  color: #e6edf3;
-  overflow: hidden;
-}
-
-/* 决策驾驶舱网格底纹 */
-.grid-overlay {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(0, 212, 170, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 212, 170, 0.05) 1px, transparent 1px);
-  background-size: 40px 40px;
-  pointer-events: none;
-}
-
-.content {
-  position: relative;
-  text-align: center;
-  padding: 24px;
-}
-
-.badge {
-  font-size: 14px;
-  letter-spacing: 4px;
-  color: #00d4aa;
-  margin-bottom: 16px;
-}
-
-.title {
-  font-size: 48px;
-  font-weight: 600;
-  margin: 0 0 12px;
-  letter-spacing: 2px;
-}
-
-.subtitle {
-  font-size: 16px;
-  color: #8b949e;
-  margin: 0 0 32px;
-}
-
-.status-row {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-}
-
-.footer {
-  position: absolute;
-  bottom: 20px;
-  font-size: 13px;
-  color: #484f58;
-  letter-spacing: 1px;
-}
-</style>

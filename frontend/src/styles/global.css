@@ -1,0 +1,198 @@
+/* 13RP 决策演示全局样式：深色"决策驾驶舱"主题 */
+
+:root {
+  --color-bg: #0d1117;
+  --color-bg-panel: #161b22;
+  --color-bg-elevated: #1c2128;
+  --color-border: #21262d;
+  --color-primary: #00d4aa;
+  --color-alert: #ff4757;
+  --color-data: #4a90d9;
+  --color-warn: #ffa940;
+  --color-text: #e6edf3;
+  --color-text-secondary: #8b949e;
+  --color-text-muted: #484f58;
+  --font-main: 'Inter', '思源黑体', 'Source Han Sans SC', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 300ms var(--ease-out);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-main);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: hidden;
+}
+
+/* ---------- 三屏布局 ---------- */
+.app-shell {
+  display: grid;
+  grid-template-columns: 350px 1fr 400px;
+  grid-template-rows: 1fr 36px;
+  grid-template-areas:
+    'left center right'
+    'status status status';
+  height: 100vh;
+  overflow: hidden;
+}
+
+.left-panel {
+  grid-area: left;
+  border-right: 1px solid var(--color-border);
+}
+
+.center-panel {
+  grid-area: center;
+  position: relative;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.right-panel {
+  grid-area: right;
+  border-left: 1px solid var(--color-border);
+}
+
+.panel {
+  background: var(--color-bg-panel);
+  overflow-y: auto;
+  padding: 14px;
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--color-primary);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.panel-section {
+  margin-bottom: 16px;
+}
+
+.panel-section-title {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  letter-spacing: 1px;
+  margin: 0 0 8px;
+}
+
+.empty-tip {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  padding: 12px 0;
+  text-align: center;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 滚动条 ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3d444d;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ---------- 动画 ---------- */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-up {
+  animation: fade-up 0.4s var(--ease-out);
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+.blink {
+  animation: blink 1s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+.shake {
+  animation: shake 0.4s var(--ease-out);
+}
+
+/* 方案卡片排序移动动画（TransitionGroup name="plan-move"） */
+.plan-move-move {
+  transition: transform 0.5s var(--ease-out);
+}
+.plan-move-enter-active {
+  transition: all 0.4s var(--ease-out);
+}
+.plan-move-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.plan-move-leave-active {
+  position: absolute;
+  width: 100%;
+  transition: all 0.3s var(--ease-out);
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+/* ---------- Element Plus 深色微调 ---------- */
+.el-card {
+  --el-card-bg-color: var(--color-bg-elevated);
+  border-color: var(--color-border);
+}

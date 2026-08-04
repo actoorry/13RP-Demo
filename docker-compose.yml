@@ -1,0 +1,30 @@
+# ============================================================
+# 13RP-Demo Docker Compose 一键部署
+# 两个服务：后端 Spring Boot + 前端 Nginx（代理 /api /ws）
+# 无 MySQL/Redis 依赖（数据来自预计算 JSON + MockDataService）
+# 使用：docker compose up -d --build
+# ============================================================
+
+services:
+  # ---------- 后端：Spring Boot 3.3.5 + Java 21 ----------
+  backend:
+    build: ./backend
+    container_name: rd13-backend
+    ports:
+      - "8080:8080"
+    # 健康检查：curl 探测健康接口（镜像内已装 curl），就绪后 frontend 才启动
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ---------- 前端：Nginx 托管静态资源并反代后端 ----------
+  frontend:
+    build: ./frontend
+    container_name: rd13-frontend
+    ports:
+      - "8088:80"
+    depends_on:
+      backend:
+        condition: service_healthy

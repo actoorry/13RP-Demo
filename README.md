@@ -12,7 +12,7 @@ P0 = 博宇四方管理端功能复现 + 国内场景决策演示。本项目为
 | 前端 | Vue3 · Vite6 · TypeScript · Element Plus · Pinia · ECharts |
 | 数据 | MySQL 8（现有容器 `mysql8`）· Redis 7（现有容器 `redis`） |
 
-> 遵循《13RP-Demo/CLAUDE.md》约定：**禁止 Docker 容器**（MySQL/Redis 除外），全部使用本机工具链。
+> 本机开发遵循《13RP-Demo/CLAUDE.md》约定，使用本机工具链（JDK / Maven / Node）；如需在服务器或其他电脑一键复现，见下方「[Docker 一键部署](#docker-一键部署)」章节。
 
 ## 目录结构
 
@@ -59,6 +59,50 @@ npm run build       # 生产构建（dist/）
 ```
 
 浏览器打开 `http://localhost:5173/`。
+
+## Docker 一键部署
+
+> 本机开发仍用上述本机工具链方式（见上）；**Docker 用于服务器 / 其他电脑一键复现**。仓库推送到 GitHub 后，目标机器克隆下来执行下方命令即可。
+
+### 0. 前置要求
+
+- Docker Engine ≥ 20.10（含 Docker Compose v2，新版 Docker 内置 `docker compose` 子命令）
+- 目标机器**无需**安装 JDK / Maven / Node / Nginx —— 全部在容器内完成构建与运行
+
+### 1. 启动
+
+```bash
+docker compose up -d --build
+```
+
+首次启动会自动构建两个镜像（后端 Spring Boot + 前端 Nginx）并先后台运行：
+
+| 服务 | 容器名 | 说明 |
+|------|--------|------|
+| 后端 | `rd13-backend` | 端口 `8080`，提供 `/api` REST 与 `/ws` WebSocket |
+| 前端 | `rd13-frontend` | 端口 `8088`，Nginx 托管静态资源并反代后端 |
+
+浏览器打开 **http://localhost:8088**。
+
+### 2. 停止 / 清理
+
+```bash
+docker compose down            # 停止并删除容器（镜像保留）
+docker compose down --rmi all  # 连同构建的镜像一并删除
+```
+
+### 3. 更新到最新版本
+
+```bash
+git pull
+docker compose up -d --build
+```
+
+### 4. 部署说明
+
+- 无 MySQL / Redis 依赖：后端数据来自预计算 JSON + MockDataService，已内置进镜像
+- 前端 Nginx 将 `/api`、`/ws` 反代到后端容器（服务名 `backend:8080`），WebSocket 已配置 Upgrade 升级头
+- 若宿主机 `8080` / `8088` 端口被占用，可修改 `docker-compose.yml` 中的端口映射
 
 ## 已知坑（npm 11 allow-scripts）
 

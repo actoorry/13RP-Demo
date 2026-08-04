@@ -38,7 +38,8 @@ curl http://localhost:8080/api/health    # 后端
 curl http://localhost:5173/              # 前端（Vite dev）
 ```
 
-- **禁止使用 Docker 容器**（MySQL/Redis 除外）：不写 docker-compose 构建、不写 Dockerfile、不用 maven/node/nginx 镜像
+- **本机开发禁止使用 Docker 容器**（MySQL/Redis 除外）：开发/构建走本机工具链（maven/node），不写 docker-compose 构建、不用 maven/node/nginx 镜像
+- **Docker 部署已提供**（服务器/其他电脑一键部署用）：`docker-compose.yml` + `backend/Dockerfile` + `frontend/Dockerfile` + `frontend/nginx.conf`，`docker compose up -d --build` 后访问 `http://<ip>:8088`；本机联调仍用本机工具链
 - 后端：Spring Boot 3.3.x + Java 21，Maven 本机构建
 - 前端：Vue3 + Vite 6 + TypeScript，npm 本机构建
 - MySQL/Redis：连接现有容器（mysql8: root/123456，redis: 6379），通过 JDBC/Lettuce 直连，**不通过 Docker 管理**

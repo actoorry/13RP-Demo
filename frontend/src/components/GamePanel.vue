@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useDemoStore } from '../stores/demo'
+import type { GameFactor, GameResultRow } from '../stores/demo'
 
 const emit = defineEmits<{ (e: 'confirm', planId: string): void }>()
 
@@ -14,31 +15,62 @@ interface ResultRow {
   winRateAfter: number
 }
 
-async function load(factors?: string[]) {
-  await store.fetchGameResults(factors)
+/** 博弈因素列表（无参加载时返回，驱动勾选框） */
+const factors = ref<GameFactor[]>([])
+/** 当前胜率表（对抗前/对抗后），随勾选变化刷新 */
+const rows = ref<ResultRow[]>([])
+/** 初始无参加载的 before 基线，带参查询失败时回退 */
+const beforeRows = ref<ResultRow[]>([])
+
+function planNameOf(planId: string): string {
+  return store.solutions.find((s) => s.id === planId)?.name ?? planId
+}
+
+function toRows(results: GameResultRow[]): ResultRow[] {
+  return results.map((r) => ({
+    planId: r.planId,
+    planName: planNameOf(r.planId),
+    winRateBefore: r.winRateBefore,
+    winRateAfter: r.winRateAfter,
+  }))
+}
+
+/**
+ * 方案 A：直接调后端 /api/demo/game-results。
+ * 无参 → before 基线（同时保存供回退）；带参 → 命中表结果。
+ * 注意 URL 中 '+' 会按空格解析，后端已支持 '+'/','/空白 分隔与字母序解析。
+ */
+async function fetchResults(factorsArg?: string[]) {
+  const hasFactors = !!(factorsArg && factorsArg.length)
+  const qs = hasFactors ? `?factors=${factorsArg!.slice().sort().join('+')}` : ''
+  try {
+    const res = await fetch(`/api/demo/game-results${qs}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    factors.value = Array.isArray(data.factors) ? (data.factors as GameFactor[]) : []
+    const results: GameResultRow[] = Array.isArray(data.results) ? data.results : []
+    if (hasFactors) {
+      rows.value = toRows(results)
+    } else {
+      beforeRows.value = toRows(results)
+      rows.value = beforeRows.value
+    }
+  } catch (err) {
+    console.error('[GamePanel] 拉取 game-results 失败', err)
+    // 保底：带参查询失败时回退到已加载的 before 数据
+    if (hasFactors && beforeRows.value.length) rows.value = beforeRows.value
+  }
 }
 
 function initChecked() {
-  const fs = store.gameResults?.factors ?? []
+  const fs = factors.value
   const explicit = fs.filter((f) => f.defaultChecked).map((f) => f.id)
   checkedFactors.value = explicit.length ? explicit : fs.slice(0, 2).map((f) => f.id)
 }
 
 function onFactorChange() {
-  const factors = checkedFactors.value.slice().sort()
-  load(factors)
+  void fetchResults(checkedFactors.value.slice().sort())
 }
-
-const rows = computed<ResultRow[]>(() => {
-  const results = store.gameResults?.results ?? []
-  const byPlan = new Map(store.solutions.map((s) => [s.id, s.name]))
-  return results.map((r) => ({
-    planId: r.planId,
-    planName: byPlan.get(r.planId) ?? r.planId,
-    winRateBefore: r.winRateBefore,
-    winRateAfter: r.winRateAfter,
-  }))
-})
 
 const maxAfter = computed(() => {
   if (!rows.value.length) return -1
@@ -62,8 +94,12 @@ function confirmWinner() {
 }
 
 onMounted(async () => {
-  if (!store.gameResults) await load()
+  await fetchResults()
   initChecked()
+  // 默认勾选后也要触发一次带 factors 的查询，否则胜率停留在 before 基线
+  if (checkedFactors.value.length) {
+    await fetchResults(checkedFactors.value)
+  }
 })
 </script>
 
@@ -73,7 +109,7 @@ onMounted(async () => {
 
     <div class="panel-section-title">对抗因素</div>
     <el-checkbox-group v-model="checkedFactors" class="factor-group" @change="onFactorChange">
-      <el-checkbox v-for="f in store.gameResults?.factors ?? []" :key="f.id" :value="f.id">
+      <el-checkbox v-for="f in factors" :key="f.id" :value="f.id">
         {{ f.name }}
       </el-checkbox>
     </el-checkbox-group>

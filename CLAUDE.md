@@ -66,3 +66,4 @@ curl http://localhost:5173/              # 前端（Vite dev）
 6. **PowerShell curl 传 JSON**：用单引号 `-d '{"a":1}'`（双引号会转义错误 → 400）
 7. **进度动画**：progress 状态单一来源（TimelineController），经 StateMachine 广播
 8. **前端刷新恢复**：onMounted 拉 `/api/demo/state` 后按 phase 恢复数据（solutions/instructions）
+9. **git 分支操作会弄挂运行中的 Vite**：`git checkout`/`stash`/`subtree split` 切换分支会删除重建工作区文件（即使内容相同，文件句柄变化），导致 Vite watcher 失效 → 页面白屏 + `.vue` 模块 500（报 "Install @vitejs/plugin-vue" 误导性错误）。处理：重启 Vite dev server（停 node 进程 → `npm run dev`）；联调期做分支操作前先停 Vite

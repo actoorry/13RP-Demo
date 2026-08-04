@@ -2,7 +2,7 @@
   <div>
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px">
       <span style="font-size:13px; color:var(--text-dim)">本次优化偏好：</span>
-      <el-radio-group :model-value="preference" @change="onPreferenceChange" size="small">
+      <el-radio-group v-model="preference" @change="onPreferenceChange" size="small">
         <el-radio-button value="delivery_first">优先保交付</el-radio-button>
         <el-radio-button value="balanced">平衡成本与交付</el-radio-button>
         <el-radio-button value="cost_first">优先降低成本</el-radio-button>

@@ -49,6 +49,8 @@ public class DemoWebSocketHandler extends TextWebSocketHandler {
                     node.path("preference").asText("balanced"));
             case "start-gaming" -> demoController.startGaming();
             case "confirm-plan" -> demoController.confirmPlan(node.path("planId").asText("P1"));
+            case "fast-forward" -> demoController.fastForward();
+            case "skip-simulation" -> demoController.skipSimulation();
             case "reset" -> demoController.reset();
             default -> session.sendMessage(new TextMessage(mapper.writeValueAsString(
                     Map.of("channel", "error", "payload", Map.of("message", "未知动作: " + action)))));

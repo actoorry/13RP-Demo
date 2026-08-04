@@ -1,0 +1,23 @@
+{
+  "name": "rd13-demo-frontend",
+  "version": "0.3.0",
+  "private": true,
+  "description": "13RP 决策演示前端（Vue3 + Vite6 + Element Plus）",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "echarts": "^5.6.0",
+    "element-plus": "^2.14.3",
+    "pinia": "^3.0.4",
+    "vue": "^3.5.40"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.8",
+    "typescript": "^5.9.3",
+    "vite": "^6.4.3"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "plans": [
+    {
+      "id": "P1",
+      "name": "改港青岛+铁路转运",
+      "metrics": {
+        "cost": 120,
+        "carbon": 45,
+        "delivery": 7,
+        "risk": 0.22
+      },
+      "preferenceRank": {
+        "delivery_first": 2,
+        "balanced": 1,
+        "cost_first": 2
+      },
+      "execSteps": [
+        "向船运公司预订宁波→青岛转港舱位（1200 吨，本周内装船）",
+        "货物集结至宁波北仑港，完成报关放行",
+        "海运发运至青岛前湾港（约 2 天）",
+        "青岛→苏州仓铁路/公路转运衔接，末端准时送达"
+      ]
+    },
+    {
+      "id": "P2",
+      "name": "空运关键物料",
+      "metrics": {
+        "cost": 340,
+        "carbon": 210,
+        "delivery": 2,
+        "risk": 0.15
+      },
+      "preferenceRank": {
+        "delivery_first": 1,
+        "balanced": 2,
+        "cost_first": 3
+      },
+      "execSteps": [
+        "预订航空舱位（关键批次 500 吨走空运通道）",
+        "关键批次从苏州仓紧急出库，加急包装",
+        "机场快运报关，锁定最近航班直飞",
+        "抵达后客户专车对接，2 天完成交付"
+      ]
+    },
+    {
+      "id": "P3",
+      "name": "启用备选供应商",
+      "metrics": {
+        "cost": 80,
+        "carbon": 12,
+        "delivery": 10,
+        "risk": 0.38
+      },
+      "preferenceRank": {
+        "delivery_first": 3,
+        "balanced": 3,
+        "cost_first": 1
+      },
+      "execSteps": [
+        "向备选供应商询价并确认产能与交期",
+        "签订应急采购合同（锁定价格与供方数量）",
+        "公路运输调度，绕开封港区域发运",
+        "原订单与客户签订延期补偿协议"
+      ]
+    }
+  ]
+}

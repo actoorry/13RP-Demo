@@ -196,3 +196,78 @@ body {
   --el-card-bg-color: var(--color-bg-elevated);
   border-color: var(--color-border);
 }
+
+/* ---------- 管理端布局（博宇四方管理端导航框架） ---------- */
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 20px;
+  background: var(--color-bg-panel);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.admin-sider {
+  width: 200px;
+  flex-shrink: 0;
+  background: var(--color-bg-panel);
+  border-right: 1px solid var(--color-border);
+  overflow-y: auto;
+}
+
+.admin-content {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+  background: var(--color-bg);
+  padding: 16px;
+}
+
+/* 侧边栏 el-menu 深色适配：铺满 sider、与面板同色 */
+.admin-sider .el-menu {
+  border-right: none;
+  background: transparent;
+}
+
+.admin-sider .el-menu-item {
+  color: var(--color-text-secondary);
+}
+
+.admin-sider .el-menu-item:hover {
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+}
+
+.admin-sider .el-menu-item.is-active {
+  background: var(--color-bg-elevated);
+  color: var(--color-primary);
+  border-right: 2px solid var(--color-primary);
+}

@@ -5,6 +5,7 @@ import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import './styles/global.css'
 import App from './App.vue'
+import router from './router'
 
 // 启用 Element Plus 深色主题
 document.documentElement.classList.add('dark')
@@ -13,5 +14,6 @@ const app = createApp(App)
 
 app.use(createPinia())
 app.use(ElementPlus)
+app.use(router)
 
 app.mount('#app')

@@ -1,0 +1,188 @@
+<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from 'vue'
+import * as echarts from 'echarts'
+
+// 数据统计 · 概览卡片
+const statCards = [
+  { label: '用户总计', value: '18,540' },
+  { label: '今日新增用户', value: '126' },
+  { label: '新增企业用户', value: '38' },
+]
+
+// 数据统计 · 月度新增用户趋势（6 个月模拟数据）
+const months = ['2026-03', '2026-04', '2026-05', '2026-06', '2026-07', '2026-08']
+const newUsers = [820, 1050, 1360, 980, 1520, 1260]
+const newEntUsers = [180, 240, 310, 220, 380, 290]
+
+const chartEl = ref<HTMLDivElement | null>(null)
+const chart = ref<echarts.ECharts | null>(null)
+
+function resizeChart() {
+  chart.value?.resize()
+}
+
+onMounted(() => {
+  if (!chartEl.value) return
+  chart.value = echarts.init(chartEl.value)
+  chart.value.setOption({
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis' },
+    legend: {
+      data: ['新增用户', '新增企业用户'],
+      textStyle: { color: '#8b949e' },
+    },
+    grid: { left: 48, right: 24, top: 48, bottom: 32 },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: months,
+      axisLine: { lineStyle: { color: '#21262d' } },
+      axisLabel: { color: '#8b949e' },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: '#21262d' } },
+      axisLabel: { color: '#8b949e' },
+    },
+    series: [
+      {
+        name: '新增用户',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        itemStyle: { color: '#00d4aa' },
+        areaStyle: { color: 'rgba(0, 212, 170, 0.12)' },
+        data: newUsers,
+      },
+      {
+        name: '新增企业用户',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        itemStyle: { color: '#4a90d9' },
+        areaStyle: { color: 'rgba(74, 144, 217, 0.12)' },
+        data: newEntUsers,
+      },
+    ],
+  })
+  window.addEventListener('resize', resizeChart)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', resizeChart)
+  chart.value?.dispose()
+  chart.value = null
+})
+
+// 数据统计 · 企业信息录入示例（列参照功能清单 §七.4）
+interface EntRow {
+  name: string
+  owner: string
+  level1: string
+  level2: string
+  contact: string
+}
+const entRows: EntRow[] = [
+  { name: '威海恒邦矿冶发展有限公司', owner: '陈明', level1: '矿冶', level2: '稀土', contact: '刘经理' },
+  { name: '广州新城市投资控股集团有限公司', owner: '周婷', level1: '投资', level2: '房地产', contact: '李经理' },
+  { name: '南京朗诗物业管理有限公司', owner: '吴刚', level1: '物业', level2: '住宅物业', contact: '王经理' },
+  { name: '沈阳博宇会幸福实业有限公司', owner: '郑华', level1: '实业', level2: '金属贸易', contact: '赵经理' },
+  { name: '北京某供应链服务有限公司', owner: '刘洋', level1: '物流', level2: '供应链', contact: '孙经理' },
+]
+</script>
+
+<template>
+  <div class="module-page">
+    <h2 class="module-title">数据统计</h2>
+
+    <el-tabs>
+      <el-tab-pane label="数据总览">
+        <div class="stat-cards">
+          <el-card v-for="card in statCards" :key="card.label" class="stat-card">
+            <div class="stat-value">{{ card.value }}</div>
+            <div class="stat-label">{{ card.label }}</div>
+          </el-card>
+        </div>
+
+        <el-card class="chart-card">
+          <template #header>
+            <span class="chart-title">月度新增用户趋势</span>
+          </template>
+          <div ref="chartEl" class="chart-box"></div>
+        </el-card>
+      </el-tab-pane>
+
+      <el-tab-pane label="用户统计">
+        <el-card>
+          <el-empty description="用户统计（P1 规划中）" />
+        </el-card>
+      </el-tab-pane>
+
+      <el-tab-pane label="多维度统计">
+        <el-card>
+          <el-empty description="多维度统计（P1 规划中）" />
+        </el-card>
+      </el-tab-pane>
+
+      <el-tab-pane label="企业信息录入">
+        <el-card class="table-card">
+          <template #header>
+            <span class="chart-title">企业信息录入示例</span>
+          </template>
+          <el-table :data="entRows" stripe>
+            <el-table-column prop="name" label="企业名称" min-width="240" />
+            <el-table-column prop="owner" label="负责人" width="120" />
+            <el-table-column prop="level1" label="一级分类" width="120" />
+            <el-table-column prop="level2" label="二级分类" width="140" />
+            <el-table-column prop="contact" label="联系人" width="120" />
+          </el-table>
+        </el-card>
+      </el-tab-pane>
+    </el-tabs>
+  </div>
+</template>
+
+<style scoped>
+.module-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 16px;
+  color: var(--color-text);
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stat-value {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.stat-label {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.chart-card,
+.table-card {
+  margin-bottom: 16px;
+}
+
+.chart-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.chart-box {
+  height: 280px;
+  width: 100%;
+}
+</style>

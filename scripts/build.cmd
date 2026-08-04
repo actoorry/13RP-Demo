@@ -1,8 +1,9 @@
 @echo off
 setlocal
 rem 13RP-Demo build helper: set local JDK/Maven env then run command
-set "JAVA_HOME=C:\Users\Administrator\.jdks\ms-21.0.12"
-set "MAVEN_HOME=D:\IDEA\IntelliJ IDEA 2025.1\plugins\maven\lib\maven3"
+rem Use system env vars if already set, otherwise fallback to local defaults
+if not defined JAVA_HOME set "JAVA_HOME=C:\Users\Administrator\.jdks\ms-21.0.12"
+if not defined MAVEN_HOME set "MAVEN_HOME=D:\IDEA\IntelliJ IDEA 2025.1\plugins\maven\lib\maven3"
 set "PATH=%JAVA_HOME%\bin;%MAVEN_HOME%\bin;%PATH%"
 
 if "%1"=="backend" goto backend

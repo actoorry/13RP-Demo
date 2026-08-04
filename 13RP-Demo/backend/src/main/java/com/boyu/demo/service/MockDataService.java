@@ -37,7 +37,8 @@ public class MockDataService {
     @Value("${demo.data-push-interval-ms:1000}")
     private long pushIntervalMs;
 
-    public MockDataService() {
+    public MockDataService(WebSocketSessionManager ws) {
+        this.ws = ws;
         ports.put("NINGBO", PortStatus.NORMAL);
         ports.put("SHANGHAI", PortStatus.NORMAL);
         ports.put("QINGDAO", PortStatus.NORMAL);

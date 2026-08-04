@@ -37,6 +37,11 @@ public class DemoController {
     public Map<String, Object> triggerEvent(@RequestBody(required = false) Map<String, Object> body) {
         String eventType = body == null ? "typhoon_port_closure" : String.valueOf(body.getOrDefault("eventType", "typhoon_port_closure"));
         int duration = body == null ? 5 : Integer.parseInt(String.valueOf(body.getOrDefault("duration", 5)));
+        return triggerEvent(eventType, duration);
+    }
+
+    /** 便捷重载：供 WebSocket handler 直接调用 */
+    public Map<String, Object> triggerEvent(String eventType, int duration) {
         if ("typhoon_port_closure".equals(eventType)) {
             mockData.injectTyphoon();
         }
@@ -52,8 +57,13 @@ public class DemoController {
 
     @PostMapping("/start-optimization")
     public Map<String, Object> startOptimization(@RequestBody(required = false) Map<String, Object> body) {
+        return startOptimization(body == null ? "balanced" : String.valueOf(body.getOrDefault("preference", "balanced")));
+    }
+
+    /** 便捷重载：供 WebSocket handler 直接调用 */
+    public Map<String, Object> startOptimization(String preference) {
         stateMachine.transition(DemoPhase.OPTIMIZING);
-        return Map.of("ok", true);
+        return Map.of("ok", true, "preference", preference);
     }
 
     @PostMapping("/start-gaming")
@@ -64,8 +74,13 @@ public class DemoController {
 
     @PostMapping("/confirm-plan")
     public Map<String, Object> confirmPlan(@RequestBody Map<String, Object> body) {
+        return confirmPlan(String.valueOf(body.getOrDefault("planId", "P1")));
+    }
+
+    /** 便捷重载：供 WebSocket handler 直接调用 */
+    public Map<String, Object> confirmPlan(String planId) {
         stateMachine.transition(DemoPhase.PLAN_SELECTED);
-        return Map.of("ok", true, "planId", String.valueOf(body.getOrDefault("planId", "P1")));
+        return Map.of("ok", true, "planId", planId);
     }
 
     @PostMapping("/fast-forward")

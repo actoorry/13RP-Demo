@@ -9,7 +9,7 @@ export interface TableColumn {
   slot?: string
 }
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     columns: TableColumn[]
     data: unknown[]
@@ -18,6 +18,11 @@ withDefaults(
     page?: number
     size?: number
     rowKey?: string
+    /**
+     * 行样式类：字符串应用所有行，或函数按行返回（如"行标红"预警）。
+     * 透传给 el-table 的 :row-class-name。
+     */
+    rowClassName?: string | ((data: { row: Record<string, unknown>; rowIndex: number }) => string)
   }>(),
   {
     loading: false,
@@ -42,6 +47,7 @@ const emit = defineEmits<{
       v-loading="loading"
       :data="data"
       :row-key="rowKey"
+      :row-class-name="props.rowClassName"
       class="data-table-body"
     >
       <el-table-column

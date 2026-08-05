@@ -257,3 +257,203 @@ INSERT IGNORE INTO todo_subscription (id, board_type, sub_type, config_json, own
 
 INSERT IGNORE INTO todo_personal (id, user_id, todo_type, template_type, remind_time, assignee, status) VALUES
 (1, 1, '指派', '出库模板', '2026-08-05 09:00:00', '李采购', 'PENDING');
+
+-- =====================================================================
+-- T10 后端 A 追加（销售域 + 库存域种子 / 六域补全种子 / 按钮权限码）
+-- 幂等：全部 INSERT IGNORE + 显式主键；域级菜单 id 4/5 已存在，不重复插入
+-- =====================================================================
+
+-- ---------------- 销售域种子补全（sale_order 已有 id=1，追加 2/3） ----------------
+INSERT IGNORE INTO sale_order (id, order_no, customer_id, product_name, qty, amount, profit, cost, fee, org_id) VALUES
+(2, 'SO-20260804-002', 2, '电解锌', 800.00, 960000.00, 180000.00, 720000.00, 5000.00, 1),
+(3, 'SO-20260805-001', 1, '电解铜', 1500.00, 1950000.00, 360000.00, 1500000.00, 9000.00, 1);
+
+-- ---------------- 业务日报（sale_daily_report） ----------------
+INSERT IGNORE INTO sale_daily_report (id, report_date, contact_cnt, lead_cnt, deal_cnt, org_id) VALUES
+(1, '2026-08-04', 20, 8, 3, 1),
+(2, '2026-08-05', 25, 10, 4, 1);
+
+-- ---------------- 开票申请（sale_invoice_apply：APPLIED→PENDING→ISSUED） ----------------
+INSERT IGNORE INTO sale_invoice_apply (id, apply_no, customer_id, invoice_no, status, creator) VALUES
+(1, 'SI-20260804-001', 1, 'INV-20260804-002', 'ISSUED', '陈销售'),
+(2, 'SI-20260804-002', 2, NULL, 'PENDING', '陈销售'),
+(3, 'SI-20260805-001', 1, NULL, 'APPLIED', '陈销售');
+
+-- ---------------- 库存统计补全（inventory_stock 已有 id=1，追加 2/3） ----------------
+-- 电解锌库龄 20 天 ≥ 15 → 红色预警；电解铜 6 天不预警
+INSERT IGNORE INTO inventory_stock (id, product_name, grade, spec, org_id, actual_qty, transit_qty, stock_age, age_warn_days) VALUES
+(2, '电解锌', '0#', '1吨/捆', 1, 300.00, 0.00, 20, 15),
+(3, '电解铜', '1#', '1吨/捆', 1, 800.00, 0.00, 6, 15);
+
+-- ---------------- 安全库存设计（inventory_safe_stock） ----------------
+INSERT IGNORE INTO inventory_safe_stock (id, product_name, material, org_id, service_level, z_value, replenish_cycle, economic_qty, order_point_qty, max_qty, safe_stock) VALUES
+(1, '电解铜', 'Cu', 1, 95.00, 1.65, 7, 600.00, 900.00, 1500.00, 600.00),
+(2, '电解锌', 'Zn', 1, 90.00, 1.28, 7, 400.00, 600.00, 1000.00, 400.00);
+
+-- ---------------- 入库管理（inventory_inbound：CREATED→APPROVED→CHECKED） ----------------
+INSERT IGNORE INTO inventory_inbound (id, inbound_no, inbound_type, source_order_no, product_name, qty, settle_qty, status, checker, audit_level) VALUES
+(1, 'IN-20260804-001', '估价', 'PO-20260804-001', '电解铜', 1200.00, 1180.00, 'CHECKED', '王仓储', '直接审核'),
+(2, 'IN-20260805-001', '代销', 'PO-20260804-002', '电解锌', 800.00, 790.00, 'APPROVED', NULL, '总监审核');
+
+-- ---------------- 出库管理/发货（inventory_outbound：CREATED→APPROVED） ----------------
+INSERT IGNORE INTO inventory_outbound (id, outbound_no, sale_order_no, product_name, qty, freight_bearer, carrier, plate_no, driver, driver_phone, status) VALUES
+(1, 'OUT-20260804-001', 'SO-20260804-001', '电解铜', 500.00, '博宇承担', '中远物流', '苏A1234', '张师傅', '13811112222', 'APPROVED'),
+(2, 'OUT-20260805-001', 'SO-20260804-002', '电解锌', 800.00, '对方承担', '顺丰快运', '苏B5678', '李师傅', '13833334444', 'CREATED');
+
+-- ---------------- 调拨（inventory_transfer） ----------------
+INSERT IGNORE INTO inventory_transfer (id, transfer_no, batch_no, qty, target_location, status) VALUES
+(1, 'TR-20260804-001', 'BATCH-20260804', 200.00, '3号库区A排', 'CREATED'),
+(2, 'TR-20260805-001', 'BATCH-20260805', 150.00, '5号库区B排', 'CREATED');
+
+-- ---------------- 盘点（inventory_check：CREATED→APPROVED→CHECKED） ----------------
+INSERT IGNORE INTO inventory_check (id, check_no, batch_no, actual_qty, status) VALUES
+(1, 'CK-20260804-001', 'BATCH-20260804', 1180.00, 'CHECKED'),
+(2, 'CK-20260805-001', 'BATCH-20260805', 790.00, 'CREATED');
+
+-- ---------------- 批号管理（inventory_batch） ----------------
+INSERT IGNORE INTO inventory_batch (id, batch_no, product_name, create_date, creator, remark) VALUES
+(1, 'BATCH-20260804', '电解铜', '2026-08-04', '王仓储', '当日批次'),
+(2, 'BATCH-20260805', '电解锌', '2026-08-05', '王仓储', '当日批次');
+
+-- ---------------- 财务域补全（费用/化验费/应收应付） ----------------
+INSERT IGNORE INTO finance_expense (id, expense_no, customer_id, product_name, amount, tax_amount, allocate_type, allocate_status, marked) VALUES
+(1, 'FE-20260804-001', 1, '电解铜', 8000.00, 1040.00, '按数量', 'ALLOCATED', 1),
+(2, 'FE-20260805-001', 2, '电解锌', 5000.00, 650.00, '按金额', 'UNALLOCATED', 0);
+
+INSERT IGNORE INTO finance_lab_fee (id, inbound_id, lab_name, sample_no, element, lab_fee, report_status, pay_status, voucher_no) VALUES
+(1, 1, '博宇检测中心', 'S-20260804-001', 'Cu', 1200.00, 'PASS', 'PAID', 'VCH-20260804-001'),
+(2, 2, '博宇检测中心', 'S-20260805-001', 'Zn', 1000.00, 'PENDING', 'UNPAID', NULL);
+
+INSERT IGNORE INTO finance_ar_ap (id, party_type, party_id, account_id, org_id, receivable, payable, balance) VALUES
+(1, 'CUSTOMER', 1, 1, 1, 1560000.00, 0.00, 1560000.00),
+(2, 'SUPPLIER', 2, 1, 1, 0.00, 1560000.00, -1560000.00);
+
+-- ---------------- CRM 补全（品种资料/证照风控/客户/线索） ----------------
+INSERT IGNORE INTO crm_variety (id, customer_id, variety_type, product_name, grade, material, spec, brand_origin, competitor, swot, monthly_qty, next_month_plan) VALUES
+(1, 1, '使用', '电解铜', '1#', 'Cu', '1吨/捆', '北方铜业', '中原铜业', '客户稳定采购，需关注竞争对手报价', 1200.00, 1500.00),
+(2, 2, '生产', '电解锌', '0#', 'Zn', '1吨/捆', '北方铜业', '南方铜业', '自产深加工，需保证来料稳定', 800.00, 900.00);
+
+INSERT IGNORE INTO crm_cert (id, customer_id, cert_type, expire_date, registered_capital, tax_no, verified_flag, trade_allowed_flag) VALUES
+(1, 1, '营业执照', '2029-12-31', 10000000.00, '91320500MA1XXXX01', 1, 1),
+(2, 2, '营业执照', '2028-06-30', 8000000.00, '91440101MA2YYYY02', 1, 1);
+
+INSERT IGNORE INTO crm_customer (id, name, source, company_type, phone, tel, email, address, industry, `level`, owner_id, follow_flag, converted_flag) VALUES
+(1, '苏州应用工厂', '线下展会', '制造', '13811110001', '0512-88886666', 'sz@example.com', '苏州市工业园区', '有色金属加工', 'A', 1, 1, 1),
+(2, '广州深加工基地', '转介绍', '制造', '13922220002', '020-66668888', 'gz@example.com', '广州市黄埔区', '有色金属深加工', 'B', 1, 1, 1);
+
+INSERT IGNORE INTO crm_lead (id, name, source, company_type, phone, email, industry, `level`, owner_id, follow_flag, converted_flag) VALUES
+(1, '宁波压延有限公司', '广告投放', '制造', '13733330003', 'nb@example.com', '压延加工', 'B', 1, 1, 0),
+(2, '重庆线缆厂', '客户转介绍', '制造', '13644440004', 'cq@example.com', '线缆制造', 'C', 1, 0, 0);
+
+-- ---------------- 流程引擎补全（安码流程） ----------------
+INSERT IGNORE INTO flow_anma_instance (id, flow_no, flow_type, title, contract_amount, supplier_id, customer_id, current_step, approver, status) VALUES
+(1, 'ANMA-20260804-001', '合同审批', '电解铜采购框架合同', 3000000.00, 1, NULL, '法务审批', '王经理', 'RUNNING'),
+(2, 'ANMA-20260805-001', '财务审批', '货款付款审批', 1560000.00, 2, NULL, '财务复核', '财务王', 'RUNNING');
+
+-- ---------------- 销售域按钮权限码（T10：id 从 52 起，parent_id=4 销售） ----------------
+INSERT IGNORE INTO sys_menu (id, parent_id, name, type, path, perms, sort) VALUES
+(52, 4, '销售订单新增', 'BUTTON', NULL, 'sale:order:add', 1),
+(53, 4, '销售订单编辑', 'BUTTON', NULL, 'sale:order:update', 2),
+(54, 4, '销售订单删除', 'BUTTON', NULL, 'sale:order:delete', 3),
+(55, 4, '业务日报新增', 'BUTTON', NULL, 'sale:daily-report:add', 4),
+(56, 4, '业务日报编辑', 'BUTTON', NULL, 'sale:daily-report:update', 5),
+(57, 4, '业务日报删除', 'BUTTON', NULL, 'sale:daily-report:delete', 6),
+(58, 4, '开票申请新增', 'BUTTON', NULL, 'sale:invoice-apply:add', 7),
+(59, 4, '开票申请流转', 'BUTTON', NULL, 'sale:invoice-apply:update', 8),
+(60, 4, '开票申请删除', 'BUTTON', NULL, 'sale:invoice-apply:delete', 9);
+
+-- ---------------- 库存域按钮权限码（parent_id=5 库存） ----------------
+INSERT IGNORE INTO sys_menu (id, parent_id, name, type, path, perms, sort) VALUES
+(61, 5, '库存新增', 'BUTTON', NULL, 'inventory:stock:add', 1),
+(62, 5, '库存编辑', 'BUTTON', NULL, 'inventory:stock:update', 2),
+(63, 5, '库存删除', 'BUTTON', NULL, 'inventory:stock:delete', 3),
+(64, 5, '安全库存新增', 'BUTTON', NULL, 'inventory:safe-stock:add', 4),
+(65, 5, '安全库存编辑', 'BUTTON', NULL, 'inventory:safe-stock:update', 5),
+(66, 5, '安全库存删除', 'BUTTON', NULL, 'inventory:safe-stock:delete', 6),
+(67, 5, '入库新增', 'BUTTON', NULL, 'inventory:inbound:add', 7),
+(68, 5, '入库审批流转', 'BUTTON', NULL, 'inventory:inbound:update', 8),
+(69, 5, '入库删除', 'BUTTON', NULL, 'inventory:inbound:delete', 9),
+(70, 5, '出库新增', 'BUTTON', NULL, 'inventory:outbound:add', 10),
+(71, 5, '出库审批', 'BUTTON', NULL, 'inventory:outbound:update', 11),
+(72, 5, '出库删除', 'BUTTON', NULL, 'inventory:outbound:delete', 12),
+(73, 5, '调拨新增', 'BUTTON', NULL, 'inventory:transfer:add', 13),
+(74, 5, '调拨编辑', 'BUTTON', NULL, 'inventory:transfer:update', 14),
+(75, 5, '调拨删除', 'BUTTON', NULL, 'inventory:transfer:delete', 15),
+(76, 5, '盘点新增', 'BUTTON', NULL, 'inventory:check:add', 16),
+(77, 5, '盘点审批流转', 'BUTTON', NULL, 'inventory:check:update', 17),
+(78, 5, '盘点删除', 'BUTTON', NULL, 'inventory:check:delete', 18),
+(79, 5, '批号新增', 'BUTTON', NULL, 'inventory:batch:add', 19),
+(80, 5, '批号编辑', 'BUTTON', NULL, 'inventory:batch:update', 20),
+(81, 5, '批号删除', 'BUTTON', NULL, 'inventory:batch:delete', 21);
+
+-- ---------------- 角色-菜单（admin role_id=1 关联 T10 新按钮） ----------------
+INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
+(1, 52), (1, 53), (1, 54), (1, 55), (1, 56), (1, 57), (1, 58), (1, 59), (1, 60),
+(1, 61), (1, 62), (1, 63), (1, 64), (1, 65), (1, 66), (1, 67), (1, 68), (1, 69),
+(1, 70), (1, 71), (1, 72), (1, 73), (1, 74), (1, 75), (1, 76), (1, 77), (1, 78),
+(1, 79), (1, 80), (1, 81);
+
+-- ---------------- 财务域按钮权限码（T11：id 从 82 起，parent_id=6 财务） ----------------
+INSERT IGNORE INTO sys_menu (id, parent_id, name, type, path, perms, sort) VALUES
+(82, 6, '到账公告新增', 'BUTTON', NULL, 'finance:arrival:add', 1),
+(83, 6, '到账公告编辑', 'BUTTON', NULL, 'finance:arrival:update', 2),
+(84, 6, '到账公告删除', 'BUTTON', NULL, 'finance:arrival:delete', 3),
+(85, 6, '费用新增', 'BUTTON', NULL, 'finance:expense:add', 4),
+(86, 6, '费用编辑', 'BUTTON', NULL, 'finance:expense:update', 5),
+(87, 6, '费用删除', 'BUTTON', NULL, 'finance:expense:delete', 6),
+(88, 6, '发票新增', 'BUTTON', NULL, 'finance:invoice:add', 7),
+(89, 6, '发票审核流转', 'BUTTON', NULL, 'finance:invoice:update', 8),
+(90, 6, '发票删除', 'BUTTON', NULL, 'finance:invoice:delete', 9),
+(91, 6, '化验费新增', 'BUTTON', NULL, 'finance:lab-fee:add', 10),
+(92, 6, '化验费流转', 'BUTTON', NULL, 'finance:lab-fee:update', 11),
+(93, 6, '化验费删除', 'BUTTON', NULL, 'finance:lab-fee:delete', 12),
+(94, 6, '应收应付新增', 'BUTTON', NULL, 'finance:ar-ap:add', 13),
+(95, 6, '应收应付编辑', 'BUTTON', NULL, 'finance:ar-ap:update', 14),
+(96, 6, '应收应付删除', 'BUTTON', NULL, 'finance:ar-ap:delete', 15);
+
+-- ---------------- CRM 域按钮权限码（parent_id=7 CRM） ----------------
+INSERT IGNORE INTO sys_menu (id, parent_id, name, type, path, perms, sort) VALUES
+(97, 7, '活动新增', 'BUTTON', NULL, 'crm:activity:add', 1),
+(98, 7, '活动编辑', 'BUTTON', NULL, 'crm:activity:update', 2),
+(99, 7, '活动删除', 'BUTTON', NULL, 'crm:activity:delete', 3),
+(100, 7, '品种资料新增', 'BUTTON', NULL, 'crm:variety:add', 4),
+(101, 7, '品种资料编辑', 'BUTTON', NULL, 'crm:variety:update', 5),
+(102, 7, '品种资料删除', 'BUTTON', NULL, 'crm:variety:delete', 6),
+(103, 7, '证照风控新增', 'BUTTON', NULL, 'crm:cert:add', 7),
+(104, 7, '证照风控编辑', 'BUTTON', NULL, 'crm:cert:update', 8),
+(105, 7, '证照风控删除', 'BUTTON', NULL, 'crm:cert:delete', 9),
+(106, 7, '客户资料新增', 'BUTTON', NULL, 'crm:customer:add', 10),
+(107, 7, '客户资料编辑', 'BUTTON', NULL, 'crm:customer:update', 11),
+(108, 7, '客户资料删除', 'BUTTON', NULL, 'crm:customer:delete', 12),
+(109, 7, '线索新增', 'BUTTON', NULL, 'crm:lead:add', 13),
+(110, 7, '线索编辑', 'BUTTON', NULL, 'crm:lead:update', 14),
+(111, 7, '线索删除', 'BUTTON', NULL, 'crm:lead:delete', 15);
+
+-- ---------------- 流程引擎域按钮权限码（parent_id=8 流程引擎） ----------------
+INSERT IGNORE INTO sys_menu (id, parent_id, name, type, path, perms, sort) VALUES
+(112, 8, 'X5 流程新增', 'BUTTON', NULL, 'flow:x5:add', 1),
+(113, 8, 'X5 流程审批流转', 'BUTTON', NULL, 'flow:x5:update', 2),
+(114, 8, 'X5 流程删除', 'BUTTON', NULL, 'flow:x5:delete', 3),
+(115, 8, '安码流程新增', 'BUTTON', NULL, 'flow:anma:add', 4),
+(116, 8, '安码流程审批流转', 'BUTTON', NULL, 'flow:anma:update', 5),
+(117, 8, '安码流程删除', 'BUTTON', NULL, 'flow:anma:delete', 6),
+(118, 8, '流程待办新增', 'BUTTON', NULL, 'flow:task:add', 7),
+(119, 8, '流程待办审批', 'BUTTON', NULL, 'flow:task:update', 8),
+(120, 8, '流程待办删除', 'BUTTON', NULL, 'flow:task:delete', 9);
+
+-- ---------------- 待办事宜域按钮权限码（parent_id=9 待办事宜） ----------------
+INSERT IGNORE INTO sys_menu (id, parent_id, name, type, path, perms, sort) VALUES
+(121, 9, '订阅新增', 'BUTTON', NULL, 'todo:subscription:add', 1),
+(122, 9, '订阅编辑', 'BUTTON', NULL, 'todo:subscription:update', 2),
+(123, 9, '订阅删除', 'BUTTON', NULL, 'todo:subscription:delete', 3),
+(124, 9, '个人待办新增', 'BUTTON', NULL, 'todo:personal:add', 4),
+(125, 9, '个人待办编辑', 'BUTTON', NULL, 'todo:personal:update', 5),
+(126, 9, '个人待办删除', 'BUTTON', NULL, 'todo:personal:delete', 6);
+
+-- ---------------- 角色-菜单（admin role_id=1 关联 T11+T12 新按钮） ----------------
+INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
+(1, 82), (1, 83), (1, 84), (1, 85), (1, 86), (1, 87), (1, 88), (1, 89), (1, 90),
+(1, 91), (1, 92), (1, 93), (1, 94), (1, 95), (1, 96), (1, 97), (1, 98), (1, 99),
+(1, 100), (1, 101), (1, 102), (1, 103), (1, 104), (1, 105), (1, 106), (1, 107), (1, 108),
+(1, 109), (1, 110), (1, 111), (1, 112), (1, 113), (1, 114), (1, 115), (1, 116), (1, 117),
+(1, 118), (1, 119), (1, 120), (1, 121), (1, 122), (1, 123), (1, 124), (1, 125), (1, 126);

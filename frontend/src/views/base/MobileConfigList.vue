@@ -187,7 +187,7 @@ onMounted(fetchList)
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="460px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="主营品种" prop="productName">
-          <el-input v-model="form.productName" placeholder="如：稀土·镝" />
+          <el-input v-model="form.productName" placeholder="如：电解铜" />
         </el-form-item>
         <el-form-item label="显示顺序">
           <el-input-number v-model="form.sort" :min="0" />

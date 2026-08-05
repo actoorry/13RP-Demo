@@ -214,7 +214,7 @@ onMounted(fetchList)
           </el-select>
         </el-form-item>
         <el-form-item label="预案名称" prop="planName">
-          <el-input v-model="form.planName" placeholder="如：8 月稀土采购计划" />
+          <el-input v-model="form.planName" placeholder="如：8 月电解铜采购计划" />
         </el-form-item>
         <el-form-item label="起始日期">
           <el-date-picker

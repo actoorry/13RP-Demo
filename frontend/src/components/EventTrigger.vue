@@ -36,10 +36,10 @@ function confirmInject() {
     <el-dialog v-model="dialogVisible" title="注入供应商缺货事件" width="420px" align-center>
       <el-form label-width="90px">
         <el-form-item label="事件类型">
-          <span>包头北方稀土矿业突发停产</span>
+          <span>北方铜业突发停产</span>
         </el-form-item>
         <el-form-item label="影响供应商">
-          <span>包头北方稀土矿业</span>
+          <span>北方铜业</span>
         </el-form-item>
         <el-form-item label="缺货时长">
           <el-radio-group v-model="duration">
@@ -59,7 +59,7 @@ function confirmInject() {
   <section v-else class="alert-panel fade-up">
     <h3 class="panel-title" style="color: var(--color-alert)">⚠ 一级供应中断</h3>
     <div class="alert-box shake">
-      <div class="alert-msg">检测到供应商缺货事件，包头北方稀土矿业已停止供货。</div>
+      <div class="alert-msg">检测到供应商缺货事件，北方铜业已停止供货。</div>
       <div class="alert-sub">订单交付率持续下降，建议立即启动 7RP 方案推演。</div>
     </div>
     <el-button type="primary" class="inject-btn" @click="emit('start-simulation')">

@@ -125,20 +125,20 @@ INSERT IGNORE INTO base_account (id, name, code, status, remark) VALUES
 
 -- ---------------- 产品主数据（base_product：品名→牌号→材质树） ----------------
 INSERT IGNORE INTO base_product (id, account_id, name, grade, material, spec, brand_origin, parent_id, sort, status) VALUES
-(1, 1, '稀土·镝', NULL, NULL, NULL, NULL, 0, 1, 1),
-(2, 1, '稀土·镝', '1#', NULL, NULL, NULL, 1, 1, 1),
-(3, 1, '稀土·镝', '1#', '镝', NULL, NULL, 2, 1, 1),
-(4, 1, '稀土·镝', NULL, NULL, '50kg/桶', NULL, 1, 2, 1),
-(5, 1, '稀土·镝', NULL, NULL, NULL, '包头北方稀土', 1, 3, 1),
-(6, 1, '稀土·钕', NULL, NULL, NULL, NULL, 0, 2, 1),
-(7, 1, '稀土·钕', '2#', NULL, NULL, NULL, 6, 1, 1);
+(1, 1, '电解铜', NULL, NULL, NULL, NULL, 0, 1, 1),
+(2, 1, '电解铜', '1#', NULL, NULL, NULL, 1, 1, 1),
+(3, 1, '电解铜', '1#', 'Cu', NULL, NULL, 2, 1, 1),
+(4, 1, '电解铜', NULL, NULL, '50kg/桶', NULL, 1, 2, 1),
+(5, 1, '电解铜', NULL, NULL, NULL, '北方铜业', 1, 3, 1),
+(6, 1, '电解锌', NULL, NULL, NULL, NULL, 0, 2, 1),
+(7, 1, '电解锌', '0#', 'Zn', NULL, NULL, 6, 1, 1);
 
 -- ---------------- 材质元素（base_material_element） ----------------
 INSERT IGNORE INTO base_material_element (id, symbol, sort, common_value, range_min, range_max, grade_independent) VALUES
-(1, 'La', 1, '镧', 0.00, 99.00, 0),
-(2, 'Ce', 2, '铈', 0.00, 99.00, 0),
-(3, 'Dy', 3, '镝', 0.00, 99.00, 0),
-(4, 'Nd', 4, '钕', 0.00, 99.00, 0);
+(1, 'Cu', 1, '铜', 0.00, 99.00, 0),
+(2, 'Zn', 2, '锌', 0.00, 99.00, 0),
+(3, 'Al', 3, '铝', 0.00, 99.00, 0),
+(4, 'Fe', 4, '铁', 0.00, 99.00, 0);
 
 -- ---------------- 合同包装验收标准（base_package_standard） ----------------
 INSERT IGNORE INTO base_package_standard (id, package_name, damage_compensation, status) VALUES
@@ -148,8 +148,8 @@ INSERT IGNORE INTO base_package_standard (id, package_name, damage_compensation,
 
 -- ---------------- 移动端主营品种（base_mobile_config） ----------------
 INSERT IGNORE INTO base_mobile_config (id, product_name, sort, status) VALUES
-(1, '稀土·镝', 1, 1),
-(2, '稀土·钕', 2, 1);
+(1, '电解铜', 1, 1),
+(2, '电解锌', 2, 1);
 
 -- ---------------- 组织/岗位字典（org_dict） ----------------
 INSERT IGNORE INTO org_dict (id, dict_type, name, parent_id, sort) VALUES
@@ -188,21 +188,21 @@ INSERT IGNORE INTO org_my_customer (id, owner_id, customer_id, customer_name, re
 
 -- ---------------- 供应商分级（purchase_supplier_grade） ----------------
 INSERT IGNORE INTO purchase_supplier_grade (id, supplier_id, supplier_name, grade, remark) VALUES
-(1, 1, '包头北方稀土矿业', '战略', '核心供应商，决策演示缺货事件来源'),
-(2, 2, '赣州中重稀土', '优选', '备用应急产能'),
-(3, 3, '宁波东方磁材', '考察', '潜在替代供应商');
+(1, 1, '北方铜业', '战略', '核心供应商，决策演示缺货事件来源'),
+(2, 2, '中原铜业', '优选', '备用应急产能'),
+(3, 3, '南方铜业', '考察', '潜在替代供应商');
 
 -- ---------------- 预测预案（purchase_forecast） ----------------
 INSERT IGNORE INTO purchase_forecast (id, plan_type, plan_name, period_start, period_end, forecast_value, creator) VALUES
-(1, 'YEAR', '2026 年稀土采购规划', '2026-01-01', '2026-12-31', 36000.00, '李采购'),
-(2, 'MONTH', '2026 年 8 月采购计划', '2026-08-01', '2026-08-31', 3000.00, '李采购'),
-(3, 'WEEK', '8 月第 2 周优化', '2026-08-10', '2026-08-16', 800.00, '李采购'),
-(4, 'DAY', '08-04 日执行', '2026-08-04', '2026-08-04', 120.00, '李采购');
+(1, 'YEAR', '2026 年电解铜采购规划', '2026-01-01', '2026-12-31', 36000.00, '李采购'),
+(2, 'MONTH', '2026 年 8 月电解铜采购计划', '2026-08-01', '2026-08-31', 3000.00, '李采购'),
+(3, 'WEEK', '8 月第 2 周电解铜优化', '2026-08-10', '2026-08-16', 800.00, '李采购'),
+(4, 'DAY', '08-04 日电解铜执行', '2026-08-04', '2026-08-04', 120.00, '李采购');
 
 -- ---------------- 询价（purchase_inquiry） ----------------
 INSERT IGNORE INTO purchase_inquiry (id, inquiry_no, inquiry_type, product_name, product_qty, supplier_id, supplier_name, status, urgent_flag, reply_time, creator) VALUES
-(1, 'INQ-20260804-001', 'URGENT', '稀土·镝', 1200.00, 2, '赣州中重稀土', 'REPLIED', 1, '2026-08-04 10:30:00', '李采购'),
-(2, 'INQ-20260804-002', 'SPECIFIED', '稀土·钕', 800.00, 1, '包头北方稀土矿业', 'RECEIVED', 0, NULL, '李采购');
+(1, 'INQ-20260804-001', 'URGENT', '电解铜', 1200.00, 2, '中原铜业', 'REPLIED', 1, '2026-08-04 10:30:00', '李采购'),
+(2, 'INQ-20260804-002', 'SPECIFIED', '电解锌', 800.00, 1, '北方铜业', 'RECEIVED', 0, NULL, '李采购');
 
 -- ---------------- 采购申请（purchase_apply：批准→复核两段审批） ----------------
 INSERT IGNORE INTO purchase_apply (id, apply_no, inquiry_id, status, applicant, approver, approve_time, reviewer, review_time) VALUES
@@ -212,36 +212,36 @@ INSERT IGNORE INTO purchase_apply (id, apply_no, inquiry_id, status, applicant, 
 -- ---------------- 待审批订单 + 结算分流（purchase_order） ----------------
 -- 现款后货 → WAIT_PAY（待付款）；先货后款 → WAIT_INBOUND（待入库）
 INSERT IGNORE INTO purchase_order (id, order_no, source, settle_method, supplier_id, supplier_name, product_name, qty, pay_amount, status, settlement_status, creator) VALUES
-(1, 'PO-20260804-001', '销采部', '现款后货', 2, '赣州中重稀土', '稀土·镝', 1200.00, 1560000.00, 'APPROVED', 'WAIT_PAY', '李采购'),
-(2, 'PO-20260804-002', '客服部', '先货后款', 1, '包头北方稀土矿业', '稀土·钕', 800.00, 960000.00, 'APPROVED', 'WAIT_INBOUND', '李采购');
+(1, 'PO-20260804-001', '销采部', '现款后货', 2, '中原铜业', '电解铜', 1200.00, 1560000.00, 'APPROVED', 'WAIT_PAY', '李采购'),
+(2, 'PO-20260804-002', '客服部', '先货后款', 1, '北方铜业', '电解锌', 800.00, 960000.00, 'APPROVED', 'WAIT_INBOUND', '李采购');
 
 -- ---------------- 进项欠票（purchase_debt） ----------------
 INSERT IGNORE INTO purchase_debt (id, inbound_no, inbound_id, invoice_no, invoice_id, supplier_id, supplier_name, amount, status) VALUES
-(1, 'IN-20260804-001', 1, NULL, NULL, 2, '赣州中重稀土', 156000.00, 'OPEN');
+(1, 'IN-20260804-001', 1, NULL, NULL, 2, '中原铜业', 156000.00, 'OPEN');
 
 -- ---------------- 应付列表（purchase_payable） ----------------
 INSERT IGNORE INTO purchase_payable (id, supplier_id, supplier_name, balance, due_date, status) VALUES
-(1, 2, '赣州中重稀土', 1560000.00, '2026-09-04', 'OPEN'),
-(2, 1, '包头北方稀土矿业', 960000.00, '2026-08-20', 'OPEN');
+(1, 2, '中原铜业', 1560000.00, '2026-09-04', 'OPEN'),
+(2, 1, '北方铜业', 960000.00, '2026-08-20', 'OPEN');
 
 -- ---------------- 销售域示例（sale_order） ----------------
 INSERT IGNORE INTO sale_order (id, order_no, customer_id, product_name, qty, amount, profit, cost, fee, org_id) VALUES
-(1, 'SO-20260804-001', 1, '稀土·镝', 1200.00, 1560000.00, 300000.00, 1200000.00, 8000.00, 1);
+(1, 'SO-20260804-001', 1, '电解铜', 1200.00, 1560000.00, 300000.00, 1200000.00, 8000.00, 1);
 
 -- ---------------- 库存域示例（inventory_stock） ----------------
 INSERT IGNORE INTO inventory_stock (id, product_name, grade, spec, org_id, actual_qty, transit_qty, stock_age, age_warn_days) VALUES
-(1, '稀土·镝', '1#', '50kg/桶', 1, 500.00, 1200.00, 10, 15);
+(1, '电解铜', '1#', '50kg/桶', 1, 500.00, 1200.00, 10, 15);
 
 -- ---------------- 财务域示例（finance_arrival / finance_invoice） ----------------
 INSERT IGNORE INTO finance_arrival (id, account_id, org_id, amount, arrival_time, operator) VALUES
 (1, 1, 1, 500000.00, '2026-08-04 09:00:00', '财务李');
 
 INSERT IGNORE INTO finance_invoice (id, invoice_no, invoice_type, customer_id, product_code, product_name, amount, status, auditor) VALUES
-(1, 'INV-20260804-001', '进项', 0, 'DY-1-50', '稀土·镝', 1560000.00, 'APPROVED', '财务王');
+(1, 'INV-20260804-001', '进项', 0, 'CU-1-50', '电解铜', 1560000.00, 'APPROVED', '财务王');
 
 -- ---------------- CRM 示例（crm_activity） ----------------
 INSERT IGNORE INTO crm_activity (id, customer_id, contact_id, activity_type, relation, product_name, price, pre_need_time, content, creator) VALUES
-(1, 1, 1, '使用', '主客', '稀土·镝', 1300.00, '2026-08-10 00:00:00', '客户询价，需要预需提醒', '李采购');
+(1, 1, 1, '使用', '主客', '电解铜', 1300.00, '2026-08-10 00:00:00', '客户询价，需要预需提醒', '李采购');
 
 -- ---------------- 流程引擎示例（flow_x5_instance / flow_task） ----------------
 INSERT IGNORE INTO flow_x5_instance (id, flow_no, flow_type, title, amount, applicant, current_step, approver, status) VALUES

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useTheme } from './composables/useTheme'
+
+// 应用级主题初始化：useTheme 为模块级单例，模块加载即应用已保存主题（localStorage 持久化，刷新恢复）
+useTheme()
 
 const route = useRoute()
 

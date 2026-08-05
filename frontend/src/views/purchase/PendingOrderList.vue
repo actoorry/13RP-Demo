@@ -288,7 +288,7 @@ onMounted(fetchList)
           </el-radio-group>
         </el-form-item>
         <el-form-item label="供应商">
-          <el-input v-model="form.supplierName" placeholder="如：包头北方稀土矿业" />
+          <el-input v-model="form.supplierName" placeholder="如：北方铜业" />
         </el-form-item>
         <el-form-item label="金额">
           <el-input-number v-model="form.payAmount" :min="0" :precision="2" style="width: 100%" />

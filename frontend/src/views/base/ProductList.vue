@@ -280,13 +280,13 @@ onMounted(async () => {
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="520px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item v-if="formType === 'product'" label="品名" prop="name">
-          <el-input v-model="form.name" placeholder="如：稀土·镝" />
+          <el-input v-model="form.name" placeholder="如：电解铜" />
         </el-form-item>
         <el-form-item v-if="formType === 'product'" label="规格">
           <el-input v-model="form.spec" placeholder="如：99.99%" />
         </el-form-item>
         <el-form-item v-if="formType === 'product'" label="品牌/产地">
-          <el-input v-model="form.brandOrigin" placeholder="如：包头/国产" />
+          <el-input v-model="form.brandOrigin" placeholder="如：北方铜业/国产" />
         </el-form-item>
         <el-form-item v-if="formType === 'product'" label="其他">
           <el-input v-model="form.other" placeholder="备注信息" />
@@ -296,7 +296,7 @@ onMounted(async () => {
           <el-input v-model="form.grade" placeholder="如：1#" />
         </el-form-item>
         <el-form-item v-if="formType === 'material'" label="材质" prop="material">
-          <el-input v-model="form.material" placeholder="如：La-Ce 混合稀土" />
+          <el-input v-model="form.material" placeholder="如：Cu 电解铜" />
         </el-form-item>
 
         <el-form-item label="显示顺序">

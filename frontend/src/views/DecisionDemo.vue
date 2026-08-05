@@ -10,6 +10,7 @@ import PlanCards from '../components/PlanCards.vue'
 import GamePanel from '../components/GamePanel.vue'
 import InstructionList from '../components/InstructionList.vue'
 import StatusBar from '../components/StatusBar.vue'
+import ThemeToggle from '../components/ThemeToggle.vue'
 
 const store = useDemoStore()
 const { connected, send } = useWebSocket()
@@ -94,6 +95,10 @@ watch(
 
 <template>
   <div class="app-shell">
+    <div class="demo-theme-toggle">
+      <ThemeToggle />
+    </div>
+
     <aside class="left-panel panel">
       <DashboardPanel />
     </aside>
@@ -126,7 +131,16 @@ watch(
 <style scoped>
 /* 嵌入管理端内容区：三屏布局由视口满高降为容器内满高，避免与顶栏叠加产生纵向滚动 */
 .app-shell {
+  position: relative;
   height: 100%;
   min-height: 480px;
+}
+
+/* 主题切换按钮：绝对定位右上角，不参与三屏 grid 布局，z-index 置顶 */
+.demo-theme-toggle {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1000;
 }
 </style>

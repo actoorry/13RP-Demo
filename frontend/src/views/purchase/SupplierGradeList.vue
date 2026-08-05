@@ -190,7 +190,7 @@ onMounted(fetchList)
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="480px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="供应商名称" prop="supplierName">
-          <el-input v-model="form.supplierName" placeholder="如：包头北方稀土矿业" />
+          <el-input v-model="form.supplierName" placeholder="如：北方铜业" />
         </el-form-item>
         <el-form-item label="分级" prop="grade">
           <el-select v-model="form.grade" style="width: 100%">

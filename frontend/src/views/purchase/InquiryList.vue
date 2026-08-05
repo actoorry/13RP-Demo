@@ -251,10 +251,10 @@ onMounted(fetchList)
           </el-select>
         </el-form-item>
         <el-form-item label="品名" prop="productName">
-          <el-input v-model="form.productName" placeholder="如：稀土·镝" />
+          <el-input v-model="form.productName" placeholder="如：电解铜" />
         </el-form-item>
         <el-form-item label="供应商">
-          <el-input v-model="form.supplierName" placeholder="如：赣州中重稀土" />
+          <el-input v-model="form.supplierName" placeholder="如：中原铜业" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="form.status" style="width: 100%">

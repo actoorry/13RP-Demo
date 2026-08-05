@@ -207,7 +207,7 @@ onMounted(fetchList)
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="480px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="元素符号" prop="symbol">
-          <el-input v-model="form.symbol" placeholder="如：La" />
+          <el-input v-model="form.symbol" placeholder="如：Cu" />
         </el-form-item>
         <el-form-item label="常用值(含量)">
           <el-input v-model="form.commonValue" placeholder="如：≥99% 或 0.05%" />

@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAuthStore } from '../stores/auth'
 import { useAccountStore } from '../stores/account'
+import ThemeToggle from '../components/ThemeToggle.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,12 +18,16 @@ const currentUser = computed(() => auth.user?.name || auth.user?.account || '未
 /** 当前激活菜单 = 完整路由路径（el-menu router 模式） */
 const activeMenu = computed(() => route.path)
 
-/** 动态展开当前所在业务域子菜单 */
+/** 动态展开当前所在业务域子菜单（共用底座下含嵌套：/admin-common → /admin/base） */
 const openedMenus = computed(() => {
   const path = route.path
-  if (path.startsWith('/admin/base')) return ['/admin/base']
+  if (path.startsWith('/admin/base')) return ['/admin-common', '/admin/base']
   if (path.startsWith('/admin/org')) return ['/admin/org']
   if (path.startsWith('/admin/purchase')) return ['/admin/purchase']
+  if (path.startsWith('/admin/flow') || path.startsWith('/admin/todo')) return ['/admin-common']
+  if (path.startsWith('/admin/sale') || path.startsWith('/admin/crm')) return ['/admin-sale']
+  if (path.startsWith('/admin/inventory')) return ['/admin-inventory']
+  if (path.startsWith('/admin/finance')) return ['/admin-finance']
   return []
 })
 
@@ -82,6 +87,8 @@ async function handleLogout() {
           />
         </el-select>
 
+        <ThemeToggle />
+
         <el-divider direction="vertical" />
 
         <el-dropdown>
@@ -102,29 +109,24 @@ async function handleLogout() {
     <div class="admin-body">
       <aside class="admin-sider">
         <el-menu :default-active="activeMenu" :default-openeds="openedMenus" router>
-          <!-- 基础数据域 -->
-          <el-sub-menu index="/admin/base">
-            <template #title>基础数据</template>
-            <el-menu-item index="/admin/base/account">账套管理</el-menu-item>
-            <el-menu-item index="/admin/base/product">产品主数据</el-menu-item>
-            <el-menu-item index="/admin/base/material-element">材质元素</el-menu-item>
-            <el-menu-item index="/admin/base/package-standard">合同包装验收标准</el-menu-item>
-            <el-menu-item index="/admin/base/mobile-config">移动端主营品种</el-menu-item>
+          <!-- 共用底座 -->
+          <el-sub-menu index="/admin-common">
+            <template #title>共用底座</template>
+            <el-sub-menu index="/admin/base">
+              <template #title>基础数据与系统管理</template>
+              <el-menu-item index="/admin/base/account">账套管理</el-menu-item>
+              <el-menu-item index="/admin/base/product">产品主数据</el-menu-item>
+              <el-menu-item index="/admin/base/material-element">材质元素</el-menu-item>
+              <el-menu-item index="/admin/base/package-standard">合同包装验收标准</el-menu-item>
+              <el-menu-item index="/admin/base/mobile-config">移动端主营品种</el-menu-item>
+            </el-sub-menu>
+            <el-menu-item index="/admin/flow">流程引擎</el-menu-item>
+            <el-menu-item index="/admin/todo">待办事宜</el-menu-item>
           </el-sub-menu>
 
-          <!-- 组织权限域 -->
-          <el-sub-menu index="/admin/org">
-            <template #title>组织权限</template>
-            <el-menu-item index="/admin/org/dict">组织/岗位字典</el-menu-item>
-            <el-menu-item index="/admin/org/group">组管理</el-menu-item>
-            <el-menu-item index="/admin/org/comprehensive">综合管理</el-menu-item>
-            <el-menu-item index="/admin/org/employee">员工管理</el-menu-item>
-            <el-menu-item index="/admin/org/permission">我的权限</el-menu-item>
-          </el-sub-menu>
-
-          <!-- 采购域 -->
+          <!-- 采购模块 -->
           <el-sub-menu index="/admin/purchase">
-            <template #title>采购</template>
+            <template #title>采购模块</template>
             <el-menu-item index="/admin/purchase/supplier-grade">供应商分级</el-menu-item>
             <el-menu-item index="/admin/purchase/forecast">预测预案</el-menu-item>
             <el-menu-item index="/admin/purchase/inquiry">询价管理</el-menu-item>
@@ -134,13 +136,34 @@ async function handleLogout() {
             <el-menu-item index="/admin/purchase/payable">应付列表</el-menu-item>
           </el-sub-menu>
 
-          <!-- 批次 2 占位域 -->
-          <el-menu-item index="/admin/sale">销售</el-menu-item>
-          <el-menu-item index="/admin/inventory">库存</el-menu-item>
-          <el-menu-item index="/admin/finance">财务</el-menu-item>
-          <el-menu-item index="/admin/crm">CRM</el-menu-item>
-          <el-menu-item index="/admin/flow">流程引擎</el-menu-item>
-          <el-menu-item index="/admin/todo">待办事宜</el-menu-item>
+          <!-- 销售模块 -->
+          <el-sub-menu index="/admin-sale">
+            <template #title>销售模块</template>
+            <el-menu-item index="/admin/sale">销售</el-menu-item>
+            <el-menu-item index="/admin/crm">CRM</el-menu-item>
+          </el-sub-menu>
+
+          <!-- 库存模块 -->
+          <el-sub-menu index="/admin-inventory">
+            <template #title>库存模块</template>
+            <el-menu-item index="/admin/inventory">库存</el-menu-item>
+          </el-sub-menu>
+
+          <!-- 财务模块 -->
+          <el-sub-menu index="/admin-finance">
+            <template #title>财务模块</template>
+            <el-menu-item index="/admin/finance">财务</el-menu-item>
+          </el-sub-menu>
+
+          <!-- 人力模块 -->
+          <el-sub-menu index="/admin/org">
+            <template #title>人力模块</template>
+            <el-menu-item index="/admin/org/dict">组织/岗位字典</el-menu-item>
+            <el-menu-item index="/admin/org/group">组管理</el-menu-item>
+            <el-menu-item index="/admin/org/comprehensive">综合管理</el-menu-item>
+            <el-menu-item index="/admin/org/employee">员工管理</el-menu-item>
+            <el-menu-item index="/admin/org/permission">我的权限</el-menu-item>
+          </el-sub-menu>
         </el-menu>
       </aside>
 

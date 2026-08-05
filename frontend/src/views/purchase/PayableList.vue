@@ -183,7 +183,7 @@ onMounted(fetchList)
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="480px" :close-on-click-modal="false">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
         <el-form-item label="供应商" prop="supplierName">
-          <el-input v-model="form.supplierName" placeholder="如：宁波东方磁材" />
+          <el-input v-model="form.supplierName" placeholder="如：南方铜业" />
         </el-form-item>
         <el-form-item label="应付余额">
           <el-input-number v-model="form.balance" :min="0" :precision="2" style="width: 100%" />

@@ -18,6 +18,21 @@
   --transition: 300ms var(--ease-out);
 }
 
+/* ---------- 日间模式（浅色） ---------- */
+html[data-theme='light'] {
+  --color-bg: #f5f7fa;
+  --color-bg-panel: #ffffff;
+  --color-bg-elevated: #f0f2f5;
+  --color-border: #e4e7ed;
+  --color-primary: #00a884;
+  --color-alert: #e5484d;
+  --color-data: #2f6fd6;
+  --color-warn: #d98a2b;
+  --color-text: #1f2329;
+  --color-text-secondary: #5a6472;
+  --color-text-muted: #9aa4b0;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -36,6 +51,7 @@ body {
   font-size: 14px;
   line-height: 1.6;
   overflow: hidden;
+  transition: background-color 0.3s var(--ease-out), color 0.3s var(--ease-out);
 }
 
 /* ---------- 三屏布局 ---------- */
@@ -121,6 +137,13 @@ body {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+/* 日间模式滚动条（浅底适配） */
+html[data-theme='light'] ::-webkit-scrollbar-thumb {
+  background: #c4c9d1;
+}
+html[data-theme='light'] ::-webkit-scrollbar-thumb:hover {
+  background: #aeb4bd;
+}
 
 /* ---------- 动画 ---------- */
 @keyframes fade-up {
@@ -194,6 +217,11 @@ body {
 /* ---------- Element Plus 深色微调 ---------- */
 .el-card {
   --el-card-bg-color: var(--color-bg-elevated);
+  border-color: var(--color-border);
+}
+/* 日间模式 Element Plus 适配：回到亮色（组件默认即亮色） */
+html[data-theme='light'] .el-card {
+  --el-card-bg-color: var(--color-bg-panel);
   border-color: var(--color-border);
 }
 
@@ -270,4 +298,14 @@ body {
   background: var(--color-bg-elevated);
   color: var(--color-primary);
   border-right: 2px solid var(--color-primary);
+}
+
+/* 日间模式管理端侧边栏菜单适配 */
+html[data-theme='light'] .admin-sider .el-menu-item {
+  color: var(--color-text-secondary);
+}
+html[data-theme='light'] .admin-sider .el-menu-item:hover,
+html[data-theme='light'] .admin-sider .el-menu-item.is-active {
+  background: var(--color-bg-elevated);
+  color: var(--color-primary);
 }

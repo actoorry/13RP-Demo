@@ -96,7 +96,7 @@ public class DemoStateMachine {
     private static String defaultMessage(DemoPhase p) {
         return switch (p) {
             case INIT -> "演示就绪，等待事件注入";
-            case EVENT_INJECTED -> "核心供应商「包头北方稀土矿业」缺货事件已注入";
+            case EVENT_INJECTED -> "核心供应商「北方铜业」缺货事件已注入";
             case SIMULATING -> "7RP 推演启动，342 条路径并行回放...";
             case SIMULATION_DONE -> "推演完成：342 条路径全部跑完";
             case OPTIMIZING -> "8RP 多目标寻优启动...";

@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 四域（订单/供应网络/物流/库存）模拟数据生成器。
  * <p>{@code @Scheduled} 每秒推送 dashboard 数据：订单交付率（初始 96，供应商缺货后渐变到 60）、
- * 未交付订单（1200±）、5 个供应网络节点状态（含中文名映射）、品类库存（稀土·镝 缺货期间递减）。
+ * 未交付订单（1200±）、5 个供应网络节点状态（含中文名映射）、品类库存（电解铜 缺货期间递减）。
  */
 @Service
 public class MockDataService {
@@ -25,7 +25,7 @@ public class MockDataService {
 
     private static final List<String> NODE_IDS = List.of("BAOTOU", "GANZHOU", "NINGBO", "SUZHOU", "GUANGZHOU");
     private static final Map<String, String> NODE_NAMES = Map.of(
-            "BAOTOU", "包头北方稀土矿业", "GANZHOU", "赣州中重稀土", "NINGBO", "宁波东方磁材",
+            "BAOTOU", "北方铜业", "GANZHOU", "中原铜业", "NINGBO", "南方铜业",
             "SUZHOU", "苏州应用工厂", "GUANGZHOU", "广州深加工基地");
     private static final Map<String, String> NODE_KINDS = Map.of(
             "BAOTOU", "supplier", "GANZHOU", "supplier", "NINGBO", "supplier",
@@ -52,7 +52,7 @@ public class MockDataService {
     /** 物流域：供应路线时效（天）。 */
     private final Map<String, Integer> routeDays = new ConcurrentHashMap<>();
 
-    /** 库存域：品类库存水位（稀土·镝 缺货期间递减）。 */
+    /** 库存域：品类库存水位（电解铜 缺货期间递减）。 */
     private final Map<String, Integer> inventory = new ConcurrentHashMap<>();
 
     public MockDataService(WebSocketSessionManager ws) {
@@ -65,7 +65,7 @@ public class MockDataService {
     public void generateAndPush() {
         if (shortageActive) {
             deliveryRate = Math.max(60.0, deliveryRate - 0.4);                       // 96 → 60 渐变
-            inventory.computeIfPresent("稀土·镝", (k, v) -> Math.max(600, v - 2));    // 缺货期间稀土递减
+            inventory.computeIfPresent("电解铜", (k, v) -> Math.max(600, v - 2));    // 缺货期间电解铜递减
         }
         Map<String, Object> tick = new LinkedHashMap<>();
         tick.put("orderDeliveryRate", round1(clamp(deliveryRate + noise(2), 0, 100)));
@@ -77,8 +77,8 @@ public class MockDataService {
     }
 
     /**
-     * 注入供应商缺货：包头北方稀土矿业置 SHORTAGE，赣州中重稀土（GANZHOU）与
-     * 宁波东方磁材（NINGBO）置 TIGHT（供应链连带紧张，让前端图例"紧张"真实生效），并记录持续天数。
+     * 注入供应商缺货：北方铜业置 SHORTAGE，中原铜业（GANZHOU）与
+     * 南方铜业（NINGBO）置 TIGHT（供应链连带紧张，让前端图例"紧张"真实生效），并记录持续天数。
      */
     public void injectSupplierShortage(int duration) {
         shortageActive = true;
@@ -113,7 +113,7 @@ public class MockDataService {
         routeDays.put("nb-sz", 1);
         routeDays.put("sz-gz", 2);
         routeDays.put("gz-gz", 4);
-        inventory.put("稀土·镝", 1200);
+        inventory.put("电解铜", 1200);
         inventory.put("石油化工·聚丙烯", 3400);
         inventory.put("办公设备·打印机", 860);
     }
@@ -154,7 +154,7 @@ public class MockDataService {
 
     private List<Map<String, Object>> buildInventory() {
         List<Map<String, Object>> list = new ArrayList<>();
-        list.add(inv("稀土·镝", "吨"));
+        list.add(inv("电解铜", "吨"));
         list.add(inv("石油化工·聚丙烯", "吨"));
         list.add(inv("办公设备·打印机", "台"));
         return list;

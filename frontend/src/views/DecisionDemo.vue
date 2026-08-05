@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useDemoStore } from '../stores/demo'
 import { useWebSocket } from '../composables/useWebSocket'
 import DashboardPanel from '../components/DashboardPanel.vue'
@@ -12,6 +13,7 @@ import InstructionList from '../components/InstructionList.vue'
 import StatusBar from '../components/StatusBar.vue'
 import ThemeToggle from '../components/ThemeToggle.vue'
 
+const router = useRouter()
 const store = useDemoStore()
 const { connected, send } = useWebSocket()
 
@@ -96,6 +98,16 @@ watch(
 <template>
   <div class="app-shell">
     <div class="demo-theme-toggle">
+      <el-tooltip content="返回管理端" placement="bottom">
+        <button
+          type="button"
+          class="back-admin"
+          aria-label="返回管理端"
+          @click="router.push('/admin')"
+        >
+          <span class="back-admin-text">返回管理端</span>
+        </button>
+      </el-tooltip>
       <ThemeToggle />
     </div>
 
@@ -136,11 +148,37 @@ watch(
   min-height: 480px;
 }
 
-/* 主题切换按钮：绝对定位右上角，不参与三屏 grid 布局，z-index 置顶 */
+/* 右上角工具区：绝对定位右上角，不参与三屏 grid 布局，z-index 置顶；左返回管理端、右主题切换 */
 .demo-theme-toggle {
   position: absolute;
   top: 10px;
   right: 10px;
   z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 返回管理端按钮：与 ThemeToggle 同风格，深色驾驶舱 + 日间模式均用主题变量 */
+.back-admin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg-elevated);
+  color: var(--color-text-secondary);
+  font-family: var(--font-main);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.3s var(--ease-out), border-color 0.3s var(--ease-out),
+    color 0.3s var(--ease-out);
+}
+
+.back-admin:hover {
+  border-color: var(--color-primary);
+  color: var(--color-text);
 }
 </style>

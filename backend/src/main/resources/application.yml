@@ -8,8 +8,11 @@ spring:
     virtual:
       enabled: true
   jackson:
-    # REST 返回字段统一 snake_case（与前端对接约定）
-    property-naming-strategy: SNAKE_CASE
+    # 管理端实体默认 camelCase 序列化（前端 TS 类型/表单均为 camelCase 字段名）。
+    # ⚠️ 不使用 SNAKE_CASE：全局命名策略会同时影响 @RequestBody 反序列化与 @ResponseBody 序列化，
+    # 导致前端 camelCase 字段（applyNo/inquiryId 等）无法映射（新建 500、列表字段读不到）。
+    # 决策演示接口返回 Map<String,Object>，Jackson 对 Map key 不做命名转换，不受影响；
+    # PrecomputedData 读取 demo-data/*.json 已使用独立 ObjectMapper（默认命名策略）。
     serialization:
       write-dates-as-timestamps: false
   datasource:

@@ -83,7 +83,7 @@ interface EntRow {
   contact: string
 }
 const entRows: EntRow[] = [
-  { name: '威海恒邦矿冶发展有限公司', owner: '陈明', level1: '矿冶', level2: '稀土', contact: '刘经理' },
+  { name: '威海恒邦矿冶发展有限公司', owner: '陈明', level1: '矿冶', level2: '有色金属', contact: '刘经理' },
   { name: '广州新城市投资控股集团有限公司', owner: '周婷', level1: '投资', level2: '房地产', contact: '李经理' },
   { name: '南京朗诗物业管理有限公司', owner: '吴刚', level1: '物业', level2: '住宅物业', contact: '王经理' },
   { name: '沈阳博宇会幸福实业有限公司', owner: '郑华', level1: '实业', level2: '金属贸易', contact: '赵经理' },

@@ -49,9 +49,9 @@ interface RuleRow {
   publishAt: string
 }
 const ruleRows: RuleRow[] = [
-  { category: '稀土系列', attrName: '镝', attrValue: '含量≥99.9%', publishAt: '2026-07-20' },
-  { category: '稀土系列', attrName: '铒铝', attrValue: '含量≥99%', publishAt: '2026-07-18' },
-  { category: '稀土系列', attrName: '铕', attrValue: '含量≥99.95%', publishAt: '2026-07-15' },
+  { category: '铜系列', attrName: 'Cu', attrValue: '含量≥99.9%', publishAt: '2026-07-20' },
+  { category: '铜系列', attrName: 'Zn', attrValue: '含量≥99%', publishAt: '2026-07-18' },
+  { category: '铜系列', attrName: 'Al', attrValue: '含量≥99.95%', publishAt: '2026-07-15' },
 ]
 
 // 商品管理 · 单位管理
@@ -89,7 +89,7 @@ interface EcologyRow {
   createTime: string
 }
 const ecologyRows: EcologyRow[] = [
-  { category: '稀土原料', name: '供求信息发布', creator: '张工', createTime: '2026-07-01' },
+  { category: '铜原料', name: '供求信息发布', creator: '张工', createTime: '2026-07-01' },
   { category: '矿冶产品', name: '企业信息发布', creator: '张工', createTime: '2026-07-02' },
   { category: '石油化工', name: '金刚区', creator: '张工', createTime: '2026-06-30' },
 ]
@@ -117,7 +117,7 @@ interface ContractRow {
   availableQty: number
 }
 const contractRows: ContractRow[] = [
-  { name: '稀土·镝供应合同', channel: '石油化工', creator: '王工', settleMethod: '现结', freightBearer: '供方承担', availableQty: 2000 },
+  { name: '电解铜供应合同', channel: '石油化工', creator: '王工', settleMethod: '现结', freightBearer: '供方承担', availableQty: 2000 },
   { name: '办公设备采购合同', channel: '办公设备', creator: '王工', settleMethod: '月结', freightBearer: '需方承担', availableQty: 500 },
   { name: '特种设备租赁合同', channel: '特种设备', creator: '王工', settleMethod: '现结', freightBearer: '供方承担', availableQty: 120 },
 ]

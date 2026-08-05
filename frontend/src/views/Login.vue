@@ -39,7 +39,7 @@ async function handleLogin() {
     <div class="login-card fade-up">
       <div class="login-brand">
         <div class="login-title">13RP 管理端</div>
-        <div class="login-subtitle">博宇企业管理平台 · 九大业务域</div>
+        <div class="login-subtitle">博宇企业管理平台 · 通用五模块</div>
       </div>
 
       <el-form label-position="top" @submit.prevent="handleLogin">
@@ -85,7 +85,7 @@ async function handleLogin() {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  background: radial-gradient(1200px 600px at 70% 20%, #16212e 0%, var(--color-bg) 55%);
+  background: radial-gradient(1200px 600px at 70% 20%, var(--color-glow, #16212e) 0%, var(--color-bg) 55%);
 }
 
 .login-card {

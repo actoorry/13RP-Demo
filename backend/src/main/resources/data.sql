@@ -128,7 +128,7 @@ INSERT IGNORE INTO base_product (id, account_id, name, grade, material, spec, br
 (1, 1, '电解铜', NULL, NULL, NULL, NULL, 0, 1, 1),
 (2, 1, '电解铜', '1#', NULL, NULL, NULL, 1, 1, 1),
 (3, 1, '电解铜', '1#', 'Cu', NULL, NULL, 2, 1, 1),
-(4, 1, '电解铜', NULL, NULL, '50kg/桶', NULL, 1, 2, 1),
+(4, 1, '电解铜', NULL, NULL, '1吨/捆', NULL, 1, 2, 1),
 (5, 1, '电解铜', NULL, NULL, NULL, '北方铜业', 1, 3, 1),
 (6, 1, '电解锌', NULL, NULL, NULL, NULL, 0, 2, 1),
 (7, 1, '电解锌', '0#', 'Zn', NULL, NULL, 6, 1, 1);
@@ -230,7 +230,7 @@ INSERT IGNORE INTO sale_order (id, order_no, customer_id, product_name, qty, amo
 
 -- ---------------- 库存域示例（inventory_stock） ----------------
 INSERT IGNORE INTO inventory_stock (id, product_name, grade, spec, org_id, actual_qty, transit_qty, stock_age, age_warn_days) VALUES
-(1, '电解铜', '1#', '50kg/桶', 1, 500.00, 1200.00, 10, 15);
+(1, '电解铜', '1#', '1吨/捆', 1, 500.00, 1200.00, 10, 15);
 
 -- ---------------- 财务域示例（finance_arrival / finance_invoice） ----------------
 INSERT IGNORE INTO finance_arrival (id, account_id, org_id, amount, arrival_time, operator) VALUES

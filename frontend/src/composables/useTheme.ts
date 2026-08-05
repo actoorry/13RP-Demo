@@ -11,6 +11,8 @@ const theme = ref<ThemeMode>(stored === 'light' ? 'light' : 'dark')
 
 function applyTheme(mode: ThemeMode) {
   document.documentElement.setAttribute('data-theme', mode)
+  // Element Plus dark 主题联动：dark 模式加 class，light 模式移除
+  document.documentElement.classList.toggle('dark', mode === 'dark')
   localStorage.setItem(STORAGE_KEY, mode)
 }
 

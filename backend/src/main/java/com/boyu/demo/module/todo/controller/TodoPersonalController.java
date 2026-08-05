@@ -6,6 +6,7 @@ import com.boyu.demo.common.PageQuery;
 import com.boyu.demo.common.Result;
 import com.boyu.demo.module.todo.entity.TodoPersonal;
 import com.boyu.demo.module.todo.service.TodoPersonalService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,19 +19,27 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 个人待办接口：GET/POST/PUT/DELETE /api/todo/personal。
- * <p>PUT 支持状态流转 status=DONE 完成（仅待办 PENDING 可完成）。
+ * <p>PUT 完成流转：body 仅含流转字段（{@code {status:'DONE'}} 或 {@code action=done}，前端办理按钮）时调用
+ * service.done(id)；编辑表单提交完整实体走普通更新，状态以库中为准、置 null 防越权（状态只能走流转动作）。
+ * 非法迁移（已完成再办）由 Service 抛 IllegalStateException，Controller 捕获转 Result.error。
  */
 @RestController
 @RequestMapping("/api/todo/personal")
 public class TodoPersonalController {
 
-    private final TodoPersonalService service;
+    /** 完成流转允许出现的字段（其余字段出现视为普通编辑）。 */
+    private static final Set<String> TRANSITION_KEYS = Set.of("id", "status", "action");
 
-    public TodoPersonalController(TodoPersonalService service) {
+    private final TodoPersonalService service;
+    private final ObjectMapper objectMapper;
+
+    public TodoPersonalController(TodoPersonalService service, ObjectMapper objectMapper) {
         this.service = service;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -63,18 +72,29 @@ public class TodoPersonalController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('todo:personal:update')")
-    public Result<Void> update(@PathVariable Long id, @RequestBody TodoPersonal entity) {
-        entity.setId(id);
-        String status = entity.getStatus();
-        try {
-            if ("DONE".equalsIgnoreCase(status)) {
-                service.done(id);
-            } else {
-                service.updateById(entity);
-            }
-        } catch (IllegalStateException e) {
-            return Result.error(e.getMessage());
+    public Result<Void> update(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+        // 路径 id 优先；body 未带 id 时用路径 id（兼容两种提交方式）
+        Long realId = id != null ? id : longVal(body.get("id"));
+        if (realId == null) {
+            return Result.error("缺少待办 id");
         }
+        String status = str(body, "status");
+        String action = str(body, "action");
+        boolean doneIntent = "done".equalsIgnoreCase(action)
+                || ("DONE".equalsIgnoreCase(status) && onlyTransitionFields(body));
+        if (doneIntent) {
+            try {
+                service.done(realId);
+                return Result.ok();
+            } catch (IllegalStateException e) {
+                return Result.error(e.getMessage());
+            }
+        }
+        // 普通编辑（标题/指派人等）：状态只能走上方完成动作，置 null 防止越权流转
+        TodoPersonal entity = objectMapper.convertValue(body, TodoPersonal.class);
+        entity.setId(realId);
+        entity.setStatus(null);
+        service.updateById(entity);
         return Result.ok();
     }
 
@@ -83,5 +103,34 @@ public class TodoPersonalController {
     public Result<Void> delete(@PathVariable Long id) {
         service.removeById(id);
         return Result.ok();
+    }
+
+    private static boolean onlyTransitionFields(Map<String, Object> body) {
+        for (String k : body.keySet()) {
+            if (TRANSITION_KEYS.contains(k)) {
+                continue;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    private static String str(Map<String, Object> body, String key) {
+        Object v = body.get(key);
+        return v == null ? null : String.valueOf(v);
+    }
+
+    private static Long longVal(Object v) {
+        if (v instanceof Number n) {
+            return n.longValue();
+        }
+        if (v instanceof String s) {
+            try {
+                return Long.parseLong(s.trim());
+            } catch (NumberFormatException ignore) {
+                return null;
+            }
+        }
+        return null;
     }
 }

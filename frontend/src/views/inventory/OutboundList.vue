@@ -154,7 +154,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await inventoryOutboundApi.update(form.id, form)
+      // 状态只能走操作栏「批准」流转，普通编辑提交体不含状态字段
+      const { status, ...payload } = form
+      await inventoryOutboundApi.update(form.id, payload)
       ElMessage.success('出库单已更新')
     } else {
       await inventoryOutboundApi.create(form)

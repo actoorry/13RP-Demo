@@ -94,7 +94,7 @@ public class LabFeeController {
         if (voucherNo == null) {
             voucherNo = str(body, "voucher_no");
         }
-        boolean flowIntent = action != null && !action.isBlank()
+        boolean flowIntent = (action != null && !action.isBlank() && onlyTransitionFields(body))
                 || (reportStatus != null && !reportStatus.isBlank() && onlyTransitionFields(body))
                 || (payStatus != null && !payStatus.isBlank() && onlyTransitionFields(body));
         if (flowIntent) {

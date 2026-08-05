@@ -116,7 +116,7 @@ npm approve-scripts esbuild
 
 ## 版本
 
-- 前端 / 后端：V0.3
+- 前端 / 后端：V0.4
 
 ## 相关文档
 

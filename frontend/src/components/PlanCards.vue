@@ -12,8 +12,21 @@ const preference = ref('balanced')
 const radarEl = ref<HTMLDivElement | null>(null)
 const radarChart = ref<echarts.ECharts | null>(null)
 const expandedId = ref('')
+const themeMode = ref<'dark' | 'light'>(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark')
+
+let themeObserver: MutationObserver | null = null
 
 const plans = computed(() => store.solutions)
+
+/** 当前是否日间模式（html[data-theme='light']） */
+function isLight(): boolean {
+  return document.documentElement.dataset.theme === 'light'
+}
+
+/** 轴标签/文字色：夜间浅灰 #8b949e、日间深灰 #4a5568，保证浅底可读 */
+function axisTextColor(): string {
+  return isLight() ? '#4a5568' : '#8b949e'
+}
 
 type MetricKey = keyof SolutionPlan['metrics']
 
@@ -53,7 +66,7 @@ function renderRadar() {
       tooltip: { trigger: 'item' },
       legend: {
         bottom: 0,
-        textStyle: { color: '#8b949e' },
+        textStyle: { color: axisTextColor() },
         data: plans.value.map((p) => p.id),
       },
       radar: {
@@ -65,7 +78,7 @@ function renderRadar() {
         },
         axisLine: { lineStyle: { color: 'rgba(0,212,170,0.25)' } },
         splitLine: { lineStyle: { color: 'rgba(0,212,170,0.25)' } },
-        axisName: { color: '#8b949e', fontSize: 11 },
+        axisName: { color: axisTextColor(), fontSize: 11 },
       },
       series: [
         {
@@ -81,6 +94,7 @@ function renderRadar() {
         },
       ],
     } as echarts.EChartsOption,
+    { notMerge: true },
   )
 }
 
@@ -97,15 +111,27 @@ function toggle(id: string) {
 onMounted(() => {
   if (!plans.value.length) refresh()
   nextTick(() => renderRadar())
+  // 监听 html[data-theme] 属性变化，主题切换时同步 themeMode 触发重绘
+  themeObserver = new MutationObserver(() => {
+    themeMode.value = isLight() ? 'light' : 'dark'
+  })
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  })
 })
 
 onUnmounted(() => {
+  themeObserver?.disconnect()
+  themeObserver = null
   radarChart.value?.dispose()
   radarChart.value = null
 })
 
 watch(preference, () => refresh())
 watch(plans, () => nextTick(() => renderRadar()), { deep: true })
+// 主题切换时重绘雷达图（setOption notMerge 避免旧配色残留）
+watch(themeMode, () => renderRadar())
 </script>
 
 <template>

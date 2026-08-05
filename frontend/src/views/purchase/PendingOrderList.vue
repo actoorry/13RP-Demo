@@ -17,11 +17,12 @@ const query = reactive<{ keyword?: string; status?: string }>({})
 
 const SOURCE_OPTIONS = ['供应商活动', '销采部', '客服部']
 const SETTLE_METHODS = ['现款后货', '先货后款']
-/** 状态统一 { label: 中文, value: 英文常量 }；待付款/待入库取 settlementStatus 字段。 */
+/** 状态统一 { label: 中文, value: 英文常量 }；待付款/待入库取 settlementStatus 字段；已关闭为终态。 */
 const STATUS_OPTIONS = [
   { label: '待审批', value: 'PENDING_APPROVE' },
   { label: '待付款', value: 'WAIT_PAY' },
   { label: '待入库', value: 'WAIT_INBOUND' },
+  { label: '已关闭', value: 'CLOSED' },
 ]
 
 const columns: TableColumn[] = [
@@ -82,8 +83,9 @@ function handleSizeChange(s: number) {
   fetchList()
 }
 
-/** 综合 status + settlementStatus 得到展示状态（英文 value）。 */
+/** 综合 status + settlementStatus 得到展示状态（英文 value）；CLOSED 终态优先。 */
 function orderStatusValue(row: PurchaseOrder): string {
+  if (row.status === 'CLOSED') return 'CLOSED'
   if (row.status === 'PENDING_APPROVE') return 'PENDING_APPROVE'
   if (row.settlementStatus === 'WAIT_PAY') return 'WAIT_PAY'
   if (row.settlementStatus === 'WAIT_INBOUND') return 'WAIT_INBOUND'
@@ -97,6 +99,7 @@ function orderStatusLabel(row: PurchaseOrder): string {
 
 function orderStatusType(row: PurchaseOrder): 'success' | 'warning' | 'primary' | 'info' {
   const v = orderStatusValue(row)
+  if (v === 'CLOSED') return 'info'
   if (v === 'WAIT_INBOUND') return 'success'
   if (v === 'WAIT_PAY') return 'warning'
   if (v === 'PENDING_APPROVE') return 'info'
@@ -115,6 +118,7 @@ const form = reactive<PurchaseOrder>({
   supplierName: '',
   payAmount: undefined,
   status: 'PENDING_APPROVE',
+  settlementStatus: undefined,
   creator: '',
 })
 
@@ -133,6 +137,7 @@ function openCreate() {
     supplierName: '',
     payAmount: undefined,
     status: 'PENDING_APPROVE',
+    settlementStatus: undefined,
     creator: '',
   })
   dialogVisible.value = true
@@ -148,6 +153,7 @@ function openEdit(row: PurchaseOrder) {
     supplierName: row.supplierName ?? '',
     payAmount: row.payAmount,
     status: row.status || 'PENDING_APPROVE',
+    settlementStatus: row.settlementStatus,
     creator: row.creator ?? '',
   })
   dialogVisible.value = true
@@ -160,7 +166,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await orderApi.update(form.id, form)
+      // 状态/结算状态只能走操作栏「审批 / 付款 / 关闭」流转，普通编辑提交体不含状态字段
+      const { status, settlementStatus, ...payload } = form
+      await orderApi.update(form.id, payload)
       ElMessage.success('订单已更新')
     } else {
       await orderApi.create(form)
@@ -193,6 +201,18 @@ async function handlePay(row: PurchaseOrder) {
   try {
     await orderApi.pay(row.id)
     ElMessage.success('付款成功')
+    fetchList()
+  } catch {
+    // 错误已由拦截器提示
+  }
+}
+
+/** 关闭订单：{status:'CLOSED'}，仅待审批/已审批未入库时显示（终态，关闭后不可审批/付款）。 */
+async function handleClose(row: PurchaseOrder) {
+  if (row.id == null) return
+  try {
+    await orderApi.update(row.id, { status: 'CLOSED' })
+    ElMessage.success('订单已关闭')
     fetchList()
   } catch {
     // 错误已由拦截器提示
@@ -248,7 +268,7 @@ onMounted(fetchList)
         <el-tag :type="orderStatusType(row)" size="small">{{ orderStatusLabel(row) }}</el-tag>
       </template>
       <template #actions>
-        <el-table-column label="操作" width="180px" align="center">
+        <el-table-column label="操作" width="220px" align="center">
           <template #default="{ row }">
             <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
             <el-button
@@ -260,12 +280,20 @@ onMounted(fetchList)
               审批
             </el-button>
             <el-button
-              v-else-if="row.settlementStatus === 'WAIT_PAY'"
+              v-if="row.settlementStatus === 'WAIT_PAY' && row.status !== 'CLOSED'"
               link
               type="primary"
               @click="handlePay(row)"
             >
               付款
+            </el-button>
+            <el-button
+              v-if="row.status === 'PENDING_APPROVE' || row.status === 'APPROVED'"
+              link
+              type="danger"
+              @click="handleClose(row)"
+            >
+              关闭
             </el-button>
           </template>
         </el-table-column>
@@ -294,9 +322,8 @@ onMounted(fetchList)
           <el-input-number v-model="form.payAmount" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="form.status" style="width: 100%">
-            <el-option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value" :label="opt.label" />
-          </el-select>
+          <el-tag :type="orderStatusType(form)" size="small">{{ orderStatusLabel(form) }}</el-tag>
+          <span class="form-tip">状态通过操作栏「审批 / 付款 / 关闭」流转</span>
         </el-form-item>
         <el-form-item label="制单人">
           <el-input v-model="form.creator" placeholder="制单人" />
@@ -319,6 +346,12 @@ onMounted(fetchList)
 }
 
 .page-tip {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.form-tip {
+  margin-left: 10px;
   font-size: 12px;
   color: var(--color-text-muted);
 }

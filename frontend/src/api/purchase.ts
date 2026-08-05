@@ -46,7 +46,7 @@ export interface PurchaseApply {
   approveTime?: string
 }
 
-/** 待审批订单 + 结算分流（现款后货→待付款 / 先货后款→待入库） */
+/** 待审批订单 + 结算分流（现款后货→待付款 / 先货后款→待入库）；CLOSED 已关闭为终态 */
 export interface PurchaseOrder {
   id?: number
   orderNo: string
@@ -55,6 +55,7 @@ export interface PurchaseOrder {
   supplierId?: number
   supplierName?: string
   payAmount?: number
+  /** 待审批 PENDING_APPROVE / 已审批 APPROVED / 已关闭 CLOSED */
   status: string
   /** 结算分流：WAIT_PAY 待付款 / WAIT_INBOUND 待入库 */
   settlementStatus?: string

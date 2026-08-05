@@ -158,7 +158,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await financeExpenseApi.update(form.id, form)
+      // 分摊状态只能走操作栏「分摊」流转，普通编辑提交体不含分摊状态字段
+      const { allocateStatus, ...payload } = form
+      await financeExpenseApi.update(form.id, payload)
       ElMessage.success('费用已更新')
     } else {
       await financeExpenseApi.create(form)
@@ -293,9 +295,8 @@ onMounted(fetchList)
           <el-input v-model="form.allocateType" placeholder="分摊类型" />
         </el-form-item>
         <el-form-item label="分摊状态">
-          <el-select v-model="form.allocateStatus" style="width: 100%">
-            <el-option v-for="opt in ALLOCATE_OPTIONS" :key="opt.value" :value="opt.value" :label="opt.label" />
-          </el-select>
+          <el-tag :type="allocateType(form.allocateStatus)" size="small">{{ allocateLabel(form.allocateStatus) }}</el-tag>
+          <span class="form-tip">状态通过操作栏「分摊」流转</span>
         </el-form-item>
         <el-form-item label="红色标记">
           <el-switch v-model="form.marked" :active-value="1" :inactive-value="0" />
@@ -318,6 +319,12 @@ onMounted(fetchList)
 }
 
 .page-tip {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.form-tip {
+  margin-left: 10px;
   font-size: 12px;
   color: var(--color-text-muted);
 }

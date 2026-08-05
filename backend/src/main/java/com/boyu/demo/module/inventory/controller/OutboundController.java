@@ -7,6 +7,9 @@ import com.boyu.demo.common.Result;
 import com.boyu.demo.module.inventory.entity.InventoryOutbound;
 import com.boyu.demo.module.inventory.service.InventoryOutboundService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Valid;
+import jakarta.validation.Validator;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,10 +39,12 @@ public class OutboundController {
 
     private final InventoryOutboundService service;
     private final ObjectMapper objectMapper;
+    private final Validator validator;
 
-    public OutboundController(InventoryOutboundService service, ObjectMapper objectMapper) {
+    public OutboundController(InventoryOutboundService service, ObjectMapper objectMapper, Validator validator) {
         this.service = service;
         this.objectMapper = objectMapper;
+        this.validator = validator;
     }
 
     @GetMapping
@@ -60,7 +65,7 @@ public class OutboundController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('inventory:outbound:add')")
-    public Result<Void> create(@RequestBody InventoryOutbound entity) {
+    public Result<Void> create(@Valid @RequestBody InventoryOutbound entity) {
         if (entity.getStatus() == null || entity.getStatus().isBlank()) {
             entity.setStatus("CREATED");
         }
@@ -87,10 +92,14 @@ public class OutboundController {
                 return Result.error(e.getMessage());
             }
         }
-        // 普通编辑：状态只能走流转动作，置 null 防止越权流转
+        // 普通编辑：状态只能走流转动作，置 null 防止越权流转；承运信息长度按实体校验约束
         InventoryOutbound entity = objectMapper.convertValue(body, InventoryOutbound.class);
         entity.setId(realId);
         entity.setStatus(null);
+        Set<ConstraintViolation<InventoryOutbound>> violations = validator.validate(entity);
+        if (!violations.isEmpty()) {
+            return Result.error(violations.iterator().next().getMessage());
+        }
         service.updateById(entity);
         return Result.ok();
     }

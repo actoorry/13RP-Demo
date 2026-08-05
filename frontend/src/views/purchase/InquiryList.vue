@@ -106,7 +106,7 @@ function openCreate() {
     supplierName: '',
     status: 'CREATED',
     urgentFlag: 0,
-    replyTime: '',
+    replyTime: null,
     creator: '',
   })
   dialogVisible.value = true
@@ -122,7 +122,7 @@ function openEdit(row: Inquiry) {
     supplierName: row.supplierName ?? '',
     status: row.status || 'CREATED',
     urgentFlag: row.urgentFlag ?? 0,
-    replyTime: row.replyTime ?? '',
+    replyTime: row.replyTime ?? null,
     creator: row.creator ?? '',
   })
   dialogVisible.value = true
@@ -135,7 +135,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await inquiryApi.update(form.id, form)
+      // 状态只能走操作栏「接收 / 反馈」流转，普通编辑提交体不含状态字段（inquiryType 等业务字段保留）
+      const { status, ...payload } = form
+      await inquiryApi.update(form.id, payload)
       ElMessage.success('询价已更新')
     } else {
       await inquiryApi.create(form)
@@ -257,9 +259,10 @@ onMounted(fetchList)
           <el-input v-model="form.supplierName" placeholder="如：中原铜业" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="form.status" style="width: 100%">
-            <el-option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value" :label="opt.label" />
-          </el-select>
+          <el-tag :type="form.status === 'REPLIED' ? 'success' : form.status === 'RECEIVED' ? 'warning' : 'info'" size="small">
+            {{ STATUS_OPTIONS.find((o) => o.value === form.status)?.label ?? form.status }}
+          </el-tag>
+          <span class="form-tip">状态通过操作栏「接收 / 反馈」流转</span>
         </el-form-item>
         <el-form-item label="标记急询">
           <el-switch v-model="form.urgentFlag" :active-value="1" :inactive-value="0" />
@@ -282,6 +285,12 @@ onMounted(fetchList)
   align-items: center;
   gap: 10px;
   margin-bottom: 14px;
+}
+
+.form-tip {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
 
 .page-tip {

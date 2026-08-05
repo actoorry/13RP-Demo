@@ -151,7 +151,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await inventoryInboundApi.update(form.id, form)
+      // 状态/审核人/分级审核只能走操作栏「批准 / 保管员审核」流转，普通编辑提交体不含这些字段
+      const { status, checker, auditLevel, ...payload } = form
+      await inventoryInboundApi.update(form.id, payload)
       ElMessage.success('入库单已更新')
     } else {
       await inventoryInboundApi.create(form)
@@ -185,11 +187,16 @@ async function handleDelete(row: InventoryInbound) {
   }
 }
 
-/** 状态流转：CREATED → APPROVED（批准）→ CHECKED（保管员审核）；按钮只在当前可流转状态显示（前置校验） */
+/** 状态流转：CREATED → APPROVED（批准）→ CHECKED（保管员审核）；按钮只在当前可流转状态显示（前置校验）。
+ * 流转请求携带 auditLevel（批准时）与 checker（保管员审核时），避免后端收到 null 覆盖库中原值。 */
 async function handleFlow(row: InventoryInbound, nextStatus: string, action: string) {
   if (row.id == null) return
   try {
-    await inventoryInboundApi.update(row.id, { status: nextStatus })
+    await inventoryInboundApi.update(row.id, {
+      status: nextStatus,
+      auditLevel: row.auditLevel ?? '',
+      checker: row.checker ?? '',
+    })
     ElMessage.success(`${action}成功`)
     fetchList()
   } catch {

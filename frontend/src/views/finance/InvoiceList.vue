@@ -157,7 +157,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await financeInvoiceApi.update(form.id, form)
+      // 状态只能走操作栏「审核 / 反审核 / 作废」流转，普通编辑提交体不含状态字段
+      const { status, ...payload } = form
+      await financeInvoiceApi.update(form.id, payload)
       ElMessage.success('发票已更新')
     } else {
       await financeInvoiceApi.create(form)
@@ -299,9 +301,8 @@ onMounted(fetchList)
           <el-input-number v-model="form.amount" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="form.status" style="width: 100%">
-            <el-option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value" :label="opt.label" />
-          </el-select>
+          <el-tag :type="statusType(form.status)" size="small">{{ statusLabel(form.status) }}</el-tag>
+          <span class="form-tip">状态通过操作栏「审核 / 反审核 / 作废」流转</span>
         </el-form-item>
         <el-form-item label="审核人">
           <el-input v-model="form.auditor" placeholder="审核人" />
@@ -324,6 +325,12 @@ onMounted(fetchList)
 }
 
 .page-tip {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.form-tip {
+  margin-left: 10px;
   font-size: 12px;
   color: var(--color-text-muted);
 }

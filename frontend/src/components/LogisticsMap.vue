@@ -8,8 +8,40 @@ const store = useDemoStore()
 const chartEl = ref<HTMLDivElement | null>(null)
 const chart = shallowRef<echarts.ECharts | null>(null)
 const hasMap = ref(false)
+const themeMode = ref<'dark' | 'light'>(document.documentElement.dataset.theme === 'light' ? 'light' : 'dark')
 
 let resizeObserver: ResizeObserver | null = null
+let themeObserver: MutationObserver | null = null
+
+/** 当前是否日间模式（html[data-theme='light']） */
+function isLight(): boolean {
+  return document.documentElement.dataset.theme === 'light'
+}
+
+/** 按主题返回 ECharts 配色：夜间保持深色驾驶舱（现状不变），日间为浅底深字 */
+function chartColors() {
+  return isLight()
+    ? {
+        tooltipBg: '#ffffff',
+        tooltipColor: '#333333',
+        tooltipBorder: '#b0bccb',
+        areaColor: '#dce3ee',
+        areaBorderColor: '#b0bccb',
+        areaEmphasis: '#eef2f8',
+        splitLine: 'rgba(80,90,110,0.15)',
+        textColor: '#4a5568',
+      }
+    : {
+        tooltipBg: '#1c2128',
+        tooltipColor: '#e6edf3',
+        tooltipBorder: '#30363d',
+        areaColor: '#1e2a36',
+        areaBorderColor: '#3e5064',
+        areaEmphasis: '#24323f',
+        splitLine: 'rgba(139,148,158,0.12)',
+        textColor: '#8b949e',
+      }
+}
 
 const defs = Object.fromEntries(SUPPLY_NODES.map((d) => [d.code, d]))
 
@@ -80,6 +112,7 @@ function buildRouteData() {
 }
 
 function buildFallbackOption(): echarts.EChartsOption {
+  const c = chartColors()
   const points = store.suppliers.map((p) => ({
     name: p.name,
     value: [p.lng, p.lat] as [number, number],
@@ -89,30 +122,30 @@ function buildFallbackOption(): echarts.EChartsOption {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
-      backgroundColor: '#1c2128',
-      borderColor: '#30363d',
-      textStyle: { color: '#e6edf3' },
+      backgroundColor: c.tooltipBg,
+      borderColor: c.tooltipBorder,
+      textStyle: { color: c.tooltipColor },
     },
     grid: { left: 50, right: 50, top: 50, bottom: 50 },
     xAxis: {
       type: 'value',
       min: 105,
       max: 126,
-      axisLabel: { color: '#8b949e' },
-      splitLine: { lineStyle: { color: 'rgba(139,148,158,0.12)' } },
+      axisLabel: { color: c.textColor },
+      splitLine: { lineStyle: { color: c.splitLine } },
     },
     yAxis: {
       type: 'value',
       min: 18,
       max: 43,
-      axisLabel: { color: '#8b949e' },
-      splitLine: { lineStyle: { color: 'rgba(139,148,158,0.12)' } },
+      axisLabel: { color: c.textColor },
+      splitLine: { lineStyle: { color: c.splitLine } },
     },
     series: [
       {
         type: 'scatter',
         symbolSize: 12,
-        label: { show: true, position: 'right', formatter: '{b}', color: '#8b949e' },
+        label: { show: true, position: 'right', formatter: '{b}', color: c.textColor },
         data: points,
       },
     ],
@@ -121,6 +154,7 @@ function buildFallbackOption(): echarts.EChartsOption {
 
 function buildOption(): echarts.EChartsOption {
   if (!hasMap.value) return buildFallbackOption()
+  const c = chartColors()
   const supplierData = buildSupplierData()
   const nodeData = buildNodeData()
   const routeData = buildRouteData()
@@ -129,17 +163,17 @@ function buildOption(): echarts.EChartsOption {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
-      backgroundColor: '#1c2128',
-      borderColor: '#30363d',
-      textStyle: { color: '#e6edf3' },
+      backgroundColor: c.tooltipBg,
+      borderColor: c.tooltipBorder,
+      textStyle: { color: c.tooltipColor },
     },
     geo: {
       map: 'china',
       roam: true,
       zoom: 1.12,
       label: { show: false },
-      itemStyle: { areaColor: '#161b22', borderColor: '#30363d' },
-      emphasis: { itemStyle: { areaColor: '#1c2128' }, label: { show: false } },
+      itemStyle: { areaColor: c.areaColor, borderColor: c.areaBorderColor },
+      emphasis: { itemStyle: { areaColor: c.areaEmphasis }, label: { show: false } },
     },
     series: [
       {
@@ -149,7 +183,7 @@ function buildOption(): echarts.EChartsOption {
         zlevel: 2,
         symbolSize: 13,
         rippleEffect: { scale: 3.2, brushType: 'stroke' },
-        label: { show: true, position: 'right', formatter: '{b}', color: '#8b949e', fontSize: 11 },
+        label: { show: true, position: 'right', formatter: '{b}', color: c.textColor, fontSize: 11 },
         data: supplierData,
       },
       {
@@ -159,7 +193,7 @@ function buildOption(): echarts.EChartsOption {
         zlevel: 2,
         symbolSize: 9,
         symbol: 'diamond',
-        label: { show: true, position: 'top', formatter: '{b}', color: '#8b949e', fontSize: 10 },
+        label: { show: true, position: 'top', formatter: '{b}', color: c.textColor, fontSize: 10 },
         data: nodeData,
       },
       {
@@ -189,11 +223,21 @@ onMounted(() => {
   loadMap()
   resizeObserver = new ResizeObserver(handleResize)
   if (chartEl.value) resizeObserver.observe(chartEl.value)
+  // 监听 html[data-theme] 属性变化，主题切换时同步 themeMode 触发重绘
+  themeObserver = new MutationObserver(() => {
+    themeMode.value = isLight() ? 'light' : 'dark'
+  })
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  })
 })
 
 onUnmounted(() => {
   resizeObserver?.disconnect()
   resizeObserver = null
+  themeObserver?.disconnect()
+  themeObserver = null
   chart.value?.dispose()
   chart.value = null
 })
@@ -203,6 +247,9 @@ watch(
   () => render(),
   { deep: true },
 )
+
+// 主题切换时重绘图表（setOption notMerge 避免旧配色残留）
+watch(themeMode, () => render())
 </script>
 
 <template>
@@ -241,6 +288,10 @@ watch(
   padding: 2px 10px;
   border-radius: 4px;
 }
+/* 日间模式：白底悬浮框 + 深色文字（文字色由 CSS 变量自动适配） */
+html[data-theme='light'] .map-fallback-tip {
+  background: rgba(255, 255, 255, 0.92);
+}
 
 .map-legend {
   position: absolute;
@@ -254,6 +305,10 @@ watch(
   padding: 4px 10px;
   border-radius: 4px;
   border: 1px solid var(--color-border);
+}
+/* 日间模式：图例改为白底浅色边框 */
+html[data-theme='light'] .map-legend {
+  background: rgba(255, 255, 255, 0.92);
 }
 
 .legend-item {

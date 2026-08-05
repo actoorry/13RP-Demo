@@ -111,7 +111,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await payableApi.update(form.id, form)
+      // 状态只能走业务流转（付款后自动置 PAID），普通编辑提交体不含状态字段
+      const { status, ...payload } = form
+      await payableApi.update(form.id, payload)
       ElMessage.success('应付记录已更新')
     } else {
       await payableApi.create(form)
@@ -198,9 +200,10 @@ onMounted(fetchList)
           />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="form.status" style="width: 100%">
-            <el-option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value" :label="opt.label" />
-          </el-select>
+          <el-tag :type="form.status === 'PAID' ? 'success' : 'warning'" size="small">
+            {{ STATUS_OPTIONS.find((o) => o.value === form.status)?.label ?? form.status }}
+          </el-tag>
+          <span class="form-tip">状态由系统维护</span>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -220,6 +223,12 @@ onMounted(fetchList)
 }
 
 .page-tip {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.form-tip {
+  margin-left: 10px;
   font-size: 12px;
   color: var(--color-text-muted);
 }

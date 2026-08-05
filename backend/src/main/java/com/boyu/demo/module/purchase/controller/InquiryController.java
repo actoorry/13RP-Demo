@@ -6,6 +6,7 @@ import com.boyu.demo.common.PageQuery;
 import com.boyu.demo.common.Result;
 import com.boyu.demo.module.purchase.entity.Inquiry;
 import com.boyu.demo.module.purchase.service.InquiryService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,19 +18,27 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * 询价管理接口：GET/POST/PUT /api/purchase/inquiry（急询价/指定询价）。
- * <p>PUT 支持状态流转：status=RECEIVED 接收；status=REPLIED 反馈；否则普通更新。
+ * <p>PUT 流转触发：body 仅含流转字段（{@code {id?, status}} 且 status 为 RECEIVED/REPLIED）；
+ * 编辑表单提交完整实体走普通更新，状态以库中为准、置 null 防越权。
+ * 非法迁移由 Service 抛 IllegalStateException，此处捕获转 Result.error。
  */
 @RestController
 @RequestMapping("/api/purchase/inquiry")
 public class InquiryController {
 
-    private final InquiryService service;
+    /** 询价流转允许出现的字段（其余字段出现视为普通编辑）。 */
+    private static final Set<String> TRANSITION_KEYS = Set.of("id", "status");
 
-    public InquiryController(InquiryService service) {
+    private final InquiryService service;
+    private final ObjectMapper objectMapper;
+
+    public InquiryController(InquiryService service, ObjectMapper objectMapper) {
         this.service = service;
+        this.objectMapper = objectMapper;
     }
 
     @GetMapping
@@ -62,14 +71,36 @@ public class InquiryController {
             return Result.error("缺少询价单 id");
         }
         String status = str(body, "status");
-        if ("RECEIVED".equalsIgnoreCase(status)) {
-            service.receive(realId);
-        } else if ("REPLIED".equalsIgnoreCase(status)) {
-            service.reply(realId);
-        } else {
-            return Result.error("不支持的询价状态流转：" + status);
+        boolean receiveIntent = "RECEIVED".equalsIgnoreCase(status) && onlyTransitionFields(body);
+        boolean replyIntent = "REPLIED".equalsIgnoreCase(status) && onlyTransitionFields(body);
+        try {
+            if (receiveIntent) {
+                service.receive(realId);
+                return Result.ok();
+            }
+            if (replyIntent) {
+                service.reply(realId);
+                return Result.ok();
+            }
+        } catch (IllegalStateException e) {
+            return Result.error(e.getMessage());
         }
+        // 普通编辑（编辑询价基础字段）：询价状态只能走上方流转动作，置 null 防止越权流转
+        Inquiry entity = objectMapper.convertValue(body, Inquiry.class);
+        entity.setId(realId);
+        entity.setStatus(null);
+        service.updateById(entity);
         return Result.ok();
+    }
+
+    private static boolean onlyTransitionFields(Map<String, Object> body) {
+        for (String k : body.keySet()) {
+            if (TRANSITION_KEYS.contains(k)) {
+                continue;
+            }
+            return false;
+        }
+        return true;
     }
 
     private static String str(Map<String, Object> body, String key) {

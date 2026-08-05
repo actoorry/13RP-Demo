@@ -78,7 +78,8 @@ public class InvoiceController {
         }
         String audit = str(body, "audit");
         String status = str(body, "status");
-        boolean flowIntent = "approve".equalsIgnoreCase(audit) || "reject".equalsIgnoreCase(audit)
+        boolean flowIntent = (("approve".equalsIgnoreCase(audit) || "reject".equalsIgnoreCase(audit))
+                && onlyTransitionFields(body))
                 || (status != null && !status.isBlank() && onlyTransitionFields(body));
         if (flowIntent) {
             try {

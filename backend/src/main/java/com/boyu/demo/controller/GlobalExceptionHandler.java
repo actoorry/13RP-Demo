@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -37,6 +39,15 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, Object> handleIllegalState(IllegalStateException e) {
         return error(e.getMessage());
+    }
+
+    /** 入参 Bean Validation 失败（@Valid + @Size/@NotBlank 等）→ 400，返回字段中文 message，而非落入 500 兜底。 */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, Object> handleMethodArgumentNotValid(MethodArgumentNotValidException e) {
+        FieldError fieldError = e.getBindingResult().getFieldErrors().stream().findFirst().orElse(null);
+        log.warn("入参校验失败: {}", fieldError != null ? fieldError.getDefaultMessage() : e.getMessage());
+        return error(fieldError != null ? fieldError.getDefaultMessage() : "请求参数校验失败");
     }
 
     /** 权限不足 → 403（管理端权限码校验被拒时不应落入 500 兜底）。 */

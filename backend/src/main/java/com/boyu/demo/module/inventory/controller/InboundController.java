@@ -84,7 +84,12 @@ public class InboundController {
                 || ("CHECKED".equalsIgnoreCase(status) && onlyTransitionFields(body));
         if (approveIntent) {
             try {
-                service.approve(realId, str(body, "auditLevel"));
+                // auditLevel 兜底：流转请求未携带分级审核字段时用默认"直接审核"，避免 null 覆盖库中原值
+                String auditLevel = str(body, "auditLevel");
+                if (auditLevel == null || auditLevel.isBlank()) {
+                    auditLevel = "直接审核";
+                }
+                service.approve(realId, auditLevel);
                 return Result.ok();
             } catch (IllegalStateException e) {
                 return Result.error(e.getMessage());

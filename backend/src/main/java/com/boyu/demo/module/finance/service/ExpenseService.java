@@ -23,6 +23,9 @@ public class ExpenseService extends ServiceImpl<ExpenseMapper, Expense> {
         if ("ALLOCATED".equals(expense.getAllocateStatus())) {
             throw new IllegalStateException("该费用已分摊，不可重复分摊");
         }
+        if (!"UNALLOCATED".equals(expense.getAllocateStatus())) {
+            throw new IllegalStateException("仅未分摊(UNALLOCATED)的费用可分摊，当前：" + expense.getAllocateStatus());
+        }
         expense.setAllocateStatus("ALLOCATED");
         updateById(expense);
     }

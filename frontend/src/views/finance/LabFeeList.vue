@@ -163,7 +163,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await financeLabFeeApi.update(form.id, form)
+      // 报告/付款状态只能走操作栏「合格 / 不合格 / 付款 / 冲账」流转，普通编辑提交体不含状态字段
+      const { reportStatus, payStatus, ...payload } = form
+      await financeLabFeeApi.update(form.id, payload)
       ElMessage.success('化验费已更新')
     } else {
       await financeLabFeeApi.create(form)
@@ -310,14 +312,11 @@ onMounted(fetchList)
           <el-input-number v-model="form.labFee" :min="0" :precision="2" style="width: 100%" />
         </el-form-item>
         <el-form-item label="报告状态">
-          <el-select v-model="form.reportStatus" style="width: 100%">
-            <el-option v-for="opt in REPORT_OPTIONS" :key="opt.value" :value="opt.value" :label="opt.label" />
-          </el-select>
+          <el-tag :type="reportType(form.reportStatus)" size="small">{{ reportLabel(form.reportStatus) }}</el-tag>
         </el-form-item>
         <el-form-item label="付款状态">
-          <el-select v-model="form.payStatus" style="width: 100%">
-            <el-option v-for="opt in PAY_OPTIONS" :key="opt.value" :value="opt.value" :label="opt.label" />
-          </el-select>
+          <el-tag :type="payType(form.payStatus)" size="small">{{ payLabel(form.payStatus) }}</el-tag>
+          <span class="form-tip">状态通过操作栏「合格 / 不合格 / 付款 / 冲账」流转</span>
         </el-form-item>
         <el-form-item label="凭证号">
           <el-input v-model="form.voucherNo" placeholder="凭证号" />
@@ -340,6 +339,12 @@ onMounted(fetchList)
 }
 
 .page-tip {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.form-tip {
+  margin-left: 10px;
   font-size: 12px;
   color: var(--color-text-muted);
 }

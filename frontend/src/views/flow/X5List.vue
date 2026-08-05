@@ -187,7 +187,9 @@ async function handleSave() {
   saving.value = true
   try {
     if (form.id != null) {
-      await flowX5Api.update(form.id, form)
+      // 状态只能走操作栏「审批通过 / 驳回」流转，普通编辑提交体不含状态字段
+      const { status, ...payload } = form
+      await flowX5Api.update(form.id, payload)
       ElMessage.success('流程已更新')
     } else {
       await flowX5Api.create(form)
@@ -331,9 +333,8 @@ onMounted(fetchList)
           <el-input v-model="form.approver" placeholder="当前审批人" />
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="form.status" style="width: 100%">
-            <el-option v-for="opt in STATUS_OPTIONS" :key="opt.value" :value="opt.value" :label="opt.label" />
-          </el-select>
+          <el-tag :type="statusType(form.status)" size="small">{{ statusLabel(form.status) }}</el-tag>
+          <span class="form-tip">状态通过操作栏「审批通过 / 驳回」流转</span>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -354,5 +355,11 @@ onMounted(fetchList)
   align-items: center;
   gap: 10px;
   margin-bottom: 14px;
+}
+
+.form-tip {
+  margin-left: 10px;
+  font-size: 12px;
+  color: var(--color-text-muted);
 }
 </style>

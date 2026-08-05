@@ -3,6 +3,7 @@ package com.boyu.demo.module.inventory.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -33,12 +34,15 @@ public class InventoryOutbound {
     private String carrier;
 
     /** 车牌（≤7 位）。 */
+    @Size(max = 7, message = "车牌号不能超过 7 位")
     private String plateNo;
 
     /** 司机（≤5 位）。 */
+    @Size(max = 5, message = "司机姓名不能超过 5 位")
     private String driver;
 
     /** 司机电话（≤11 位）。 */
+    @Size(max = 11, message = "司机电话不能超过 11 位")
     private String driverPhone;
 
     /** 制单完成 CREATED → 批准 APPROVED。 */

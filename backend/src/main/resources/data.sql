@@ -457,3 +457,11 @@ INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
 (1, 100), (1, 101), (1, 102), (1, 103), (1, 104), (1, 105), (1, 106), (1, 107), (1, 108),
 (1, 109), (1, 110), (1, 111), (1, 112), (1, 113), (1, 114), (1, 115), (1, 116), (1, 117),
 (1, 118), (1, 119), (1, 120), (1, 121), (1, 122), (1, 123), (1, 124), (1, 125), (1, 126);
+
+-- ---------------- 采购订单关闭权限码（批次 2 复审 P1-7：id=200 顺延，parent_id=3 采购） ----------------
+INSERT IGNORE INTO sys_menu (id, parent_id, name, type, path, perms, sort) VALUES
+(200, 3, '订单关闭', 'BUTTON', NULL, 'purchase:order:close', 19);
+
+-- 订单关闭权限码角色关联：系统管理（admin）+ 组长（组长已有订单审批/付款）
+INSERT IGNORE INTO sys_role_menu (role_id, menu_id) VALUES
+(1, 200), (2, 200);

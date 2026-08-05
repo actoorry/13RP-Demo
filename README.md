@@ -2,25 +2,29 @@
 
 **13RP（博宇宙十三维决策操作系统）** P0 阶段决策演示项目。
 
-P0 = 博宇四方管理端功能复现 + 国内场景决策演示。本项目为**可构建的项目骨架**（占位级），不含业务逻辑，后续任务将逐步实现 4RP 看板 / 6RP 孪生 / 决策交互面板。
+P0 = 博宇企业管理平台九大业务域管理端复现（V0.4 五模块：共用底座 / 采购 / 销售 / 库存 / 财务 / 人力）+ 国内场景决策演示（电解铜断供推演）。
+
+本项目为**可运行的完整 Demo**：后端 Spring Boot 提供管理端九域 REST API（JWT 认证 + 权限码）+ 决策演示 WebSocket；前端 Vue3 提供管理端 25+ 页面 + 决策演示三屏驾驶舱。讲解演示时**本机启动，局域网内其他电脑通过浏览器访问**即可。
 
 ## 技术栈
 
 | 端 | 技术 |
 |----|------|
-| 后端 | Java 21 · Spring Boot 3.3.x · Maven · WebSocket |
+| 后端 | Java 21 · Spring Boot 3.3.x · MyBatis-Plus · Spring Security JWT · WebSocket · MySQL 8 · Redis（可降级） |
 | 前端 | Vue3 · Vite6 · TypeScript · Element Plus · Pinia · ECharts |
-| 数据 | MySQL 8（现有容器 `mysql8`）· Redis 7（现有容器 `redis`） |
-
-> 本机开发遵循《13RP-Demo/CLAUDE.md》约定，使用本机工具链（JDK / Maven / Node）；如需在服务器或其他电脑一键复现，见下方「[Docker 一键部署](#docker-一键部署)」章节。
+| 数据 | MySQL 8（现有容器 `mysql8`，库 `boyu_demo`）· Redis 7（现有容器 `redis`，非硬依赖，连不上自动降级查库） |
 
 ## 目录结构
 
 ```
 13RP-Demo/
 ├── backend/        # Spring Boot 后端（端口 8080）
-├── frontend/       # Vue3 前端（Vite dev 端口 5173）
-├── scripts/        # 本机构建辅助脚本
+│   └── src/main/resources/
+│       ├── schema.sql   # 建表（幂等，启动自动执行）
+│       ├── data.sql     # 种子数据（幂等，启动自动执行）
+│       └── demo-data/   # 决策演示预计算 JSON（342 路径 / 3 方案 / 4 因素 / 5 指令）
+├── frontend/       # Vue3 前端（Vite dev 端口 5173，/api、/ws 代理到 8080）
+├── scripts/        # 本机构建辅助脚本（build.cmd）
 ├── CLAUDE.md       # 环境路径与构建约定（必读）
 └── README.md
 ```
@@ -32,13 +36,14 @@ P0 = 博宇四方管理端功能复现 + 国内场景决策演示。本项目为
 - JDK 21：`C:\Users\Administrator\.jdks\ms-21.0.12`
 - Maven 3.9.9：IDEA bundled（`D:\IDEA\IntelliJ IDEA 2025.1\plugins\maven\lib\maven3`）
 - Node.js ≥ 20（本机 24.18.0）、npm 11（有 allow-scripts 策略，见下方"已知坑"）
+- MySQL 8 容器 `mysql8`（root/123456，库 `boyu_demo` 自动初始化）；Redis 容器 `redis`（可选）
 
 ### 1. 后端
 
 ```bash
 cd backend
-mvn package -DskipTests                 # 构建 → target/rd13-demo-0.3.0.jar
-java -jar target/rd13-demo-0.3.0.jar    # 运行（端口 8080）
+mvn package -DskipTests                 # 构建 → target/rd13-demo-0.4.0.jar
+java -jar target/rd13-demo-0.4.0.jar    # 运行（端口 8080）
 ```
 
 健康检查：
@@ -54,55 +59,50 @@ curl http://localhost:8080/api/health   # 期望 {"ok":true}
 ```bash
 cd frontend
 npm install         # 依赖（已配置淘宝镜像 registry.npmmirror.com）
-npm run dev         # 开发（端口 5173，/api、/ws 代理到 localhost:8080）
+npm run dev         # 开发（端口 5173，已配置 host 0.0.0.0 监听所有网卡）
 npm run build       # 生产构建（dist/）
 ```
 
 浏览器打开 `http://localhost:5173/`。
 
-## Docker 一键部署
+## 局域网演示访问（讲解用）
 
-> 本机开发仍用上述本机工具链方式（见上）；**Docker 用于服务器 / 其他电脑一键复现**。仓库推送到 GitHub 后，目标机器克隆下来执行下方命令即可。
+服务在本机启动后，**同一局域网内的其他电脑**可通过浏览器直接访问本机演示页面：
 
-### 0. 前置要求
-
-- Docker Engine ≥ 20.10（含 Docker Compose v2，新版 Docker 内置 `docker compose` 子命令）
-- 目标机器**无需**安装 JDK / Maven / Node / Nginx —— 全部在容器内完成构建与运行
-
-### 1. 启动
-
-```bash
-docker compose up -d --build
+```
+http://<本机IP>:5173
 ```
 
-首次启动会自动构建两个镜像（后端 Spring Boot + 前端 Nginx）并先后台运行：
+例如本机 IP 为 `192.168.2.52` 时：
 
-| 服务 | 容器名 | 说明 |
-|------|--------|------|
-| 后端 | `rd13-backend` | 端口 `8080`，提供 `/api` REST 与 `/ws` WebSocket |
-| 前端 | `rd13-frontend` | 端口 `8088`，Nginx 托管静态资源并反代后端 |
-
-浏览器打开 **http://localhost:8088**。
-
-### 2. 停止 / 清理
-
-```bash
-docker compose down            # 停止并删除容器（镜像保留）
-docker compose down --rmi all  # 连同构建的镜像一并删除
+```
+http://192.168.2.52:5173
 ```
 
-### 3. 更新到最新版本
+登录账号：`admin` / `123456`
 
-```bash
-git pull
-docker compose up -d --build
+### 准备工作（一次即可）
+
+1. **放行防火墙端口**（Windows 需管理员执行一次）：
+
+```powershell
+netsh advfirewall firewall add rule name="13RP-Demo Frontend 5173" dir=in action=allow protocol=TCP localport=5173
+netsh advfirewall firewall add rule name="13RP-Demo Backend 8080" dir=in action=allow protocol=TCP localport=8080
 ```
 
-### 4. 部署说明
+2. **确认本机 IP**：
 
-- 无 MySQL / Redis 依赖：后端数据来自预计算 JSON + MockDataService，已内置进镜像
-- 前端 Nginx 将 `/api`、`/ws` 反代到后端容器（服务名 `backend:8080`），WebSocket 已配置 Upgrade 升级头
-- 若宿主机 `8080` / `8088` 端口被占用，可修改 `docker-compose.yml` 中的端口映射
+```powershell
+ipconfig        # 查看 IPv4 地址（如 192.168.2.52）
+```
+
+3. **确认访问**：在本机浏览器打开 `http://<本机IP>:5173` 验证一次；其他电脑需与演示机在同一网段（同一 WiFi / 网线）。
+
+### 演示提示
+
+- 首次访问个别页面 Vite 编译需 1-3 秒，**建议讲解前先在演示机把所有页面点一遍预热**（Vite 会缓存编译结果）。
+- 决策演示页入口：管理端右上角用户菜单 →「决策演示」，或直接访问 `http://<本机IP>:5173/#/demo`（匿名放行，无需登录）。
+- 讲解期间保持本机两个服务（8080 / 5173）运行；结束可在本机 Ctrl+C 停止。
 
 ## 已知坑（npm 11 allow-scripts）
 

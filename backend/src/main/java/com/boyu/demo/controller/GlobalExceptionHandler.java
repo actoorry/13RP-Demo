@@ -2,7 +2,10 @@ package com.boyu.demo.controller;
 
 import com.boyu.demo.orchestrator.DemoStateMachine;
 import com.boyu.demo.orchestrator.TimelineController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,6 +22,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
     private final DemoStateMachine stateMachine;
     private final TimelineController timeline;
 
@@ -34,10 +39,19 @@ public class GlobalExceptionHandler {
         return error(e.getMessage());
     }
 
-    /** 未知异常兜底 → 500，不向客户端泄露内部细节。 */
+    /** 权限不足 → 403（管理端权限码校验被拒时不应落入 500 兜底）。 */
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map<String, Object> handleAccessDenied(AccessDeniedException e) {
+        log.warn("AccessDenied: {}", e.getMessage());
+        return error("无操作权限");
+    }
+
+    /** 未知异常兜底 → 500，不向客户端泄露内部细节；必须打印日志便于联调排查。 */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, Object> handleException(Exception e) {
+        log.error("未处理异常（GlobalExceptionHandler 兜底）", e);
         return error("系统错误");
     }
 

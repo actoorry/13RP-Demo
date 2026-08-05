@@ -1,90 +1,41 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 
-// 顶部栏公司/平台选择（模拟数据，仅用于演示切换）
-const companyOptions = [{ value: 'boyu', label: '沈阳博宇会幸福实业有限公司' }]
-const platformOptions = [
-  { value: 'global', label: '全球发展' },
-  { value: 'domestic', label: '国内发展' },
-]
-
-const currentCompany = ref('boyu')
-const currentPlatform = ref('global')
-
-// 侧边栏一级导航：index 即路由 path，el-menu router 模式直接跳转
-const menuItems = [
-  { index: '/demo', label: '决策演示' },
-  { index: '/company', label: '公司架构' },
-  { index: '/crm', label: 'CRM' },
-  { index: '/product', label: '商品管理' },
-  { index: '/system', label: '系统管理' },
-  { index: '/cms', label: 'CMS' },
-  { index: '/operation', label: '运营管理' },
-  { index: '/stats', label: '数据统计' },
-]
+// 决策演示入口：/demo 页面本身无需入口；登录页与管理端页右下角保留浮动入口
+const showDemoEntry = computed(() => route.path !== '/demo')
 </script>
 
 <template>
-  <div class="admin-layout">
-    <header class="admin-header">
-      <div class="admin-header-left">
-        <span class="admin-title">13RP管理端</span>
-      </div>
-      <div class="admin-header-right">
-        <span class="admin-select-label">公司</span>
-        <el-select v-model="currentCompany" class="admin-select">
-          <el-option
-            v-for="opt in companyOptions"
-            :key="opt.value"
-            :value="opt.value"
-            :label="opt.label"
-          />
-        </el-select>
-        <span class="admin-select-label">平台</span>
-        <el-select v-model="currentPlatform" class="admin-select">
-          <el-option
-            v-for="opt in platformOptions"
-            :key="opt.value"
-            :value="opt.value"
-            :label="opt.label"
-          />
-        </el-select>
-      </div>
-    </header>
-
-    <div class="admin-body">
-      <aside class="admin-sider">
-        <el-menu :default-active="route.path" router class="admin-menu">
-          <el-menu-item v-for="item in menuItems" :key="item.index" :index="item.index">
-            {{ item.label }}
-          </el-menu-item>
-        </el-menu>
-      </aside>
-
-      <main class="admin-content">
-        <router-view />
-      </main>
-    </div>
-  </div>
+  <router-view />
+  <router-link v-if="showDemoEntry" to="/demo" class="demo-entry">
+    决策演示
+  </router-link>
 </template>
 
 <style scoped>
-.admin-title {
-  font-size: 16px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: var(--color-text);
-}
-
-.admin-select-label {
+.demo-entry {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 2000;
+  padding: 8px 16px;
   font-size: 13px;
-  color: var(--color-text-secondary);
+  color: var(--color-primary);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  text-decoration: none;
+  letter-spacing: 1px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.admin-select {
-  width: 220px;
+.demo-entry:hover {
+  color: var(--color-bg);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
 }
 </style>

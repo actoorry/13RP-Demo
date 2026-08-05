@@ -12,6 +12,45 @@ spring:
     property-naming-strategy: SNAKE_CASE
     serialization:
       write-dates-as-timestamps: false
+  datasource:
+    url: jdbc:mysql://localhost:3306/boyu_demo?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&characterEncoding=utf8
+    username: root
+    password: "123456"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      # 无密码，直接连接
+  sql:
+    init:
+      # 每次启动执行 schema.sql + data.sql（均为幂等写法）
+      mode: always
+      encoding: UTF-8
+      continue-on-error: false
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# JWT 认证配置（secret 至少 32 字符；生产环境需外部化，通过环境变量 JWT_SECRET 注入，勿硬编码）
+jwt:
+  secret: ${JWT_SECRET:13RP-Boyu-Demo-JWT-Secret-Key-2026-0805-V04-HS256-0123456789}
+  # token 有效期（小时）
+  expire-hours: 12
+  header: Authorization
+  prefix: "Bearer "
 
 demo:
   # 看板数据推送间隔（毫秒），MockDataService.generateAndPush 使用

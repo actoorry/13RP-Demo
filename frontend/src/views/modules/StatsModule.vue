@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 
 // 数据统计 · 概览卡片
@@ -16,6 +16,78 @@ const newEntUsers = [180, 240, 310, 220, 380, 290]
 
 const chartEl = ref<HTMLDivElement | null>(null)
 const chart = ref<echarts.ECharts | null>(null)
+// 当前主题模式：跟随 html[data-theme]，图表配色随主题切换重绘
+const themeMode = ref<'dark' | 'light'>(
+  document.documentElement.dataset.theme === 'light' ? 'light' : 'dark',
+)
+let themeObserver: MutationObserver | null = null
+
+/** 当前是否日间模式（html[data-theme='light']） */
+function isLight(): boolean {
+  return document.documentElement.dataset.theme === 'light'
+}
+
+/** 图表轴标签/文字色：日间深灰、夜间浅灰，保证浅底可读 */
+function chartTextColor(): string {
+  return isLight() ? '#4a5568' : '#8b949e'
+}
+
+/** 轴线/分割线色：日间浅边框、夜间深线 */
+function chartLineColor(): string {
+  return isLight() ? '#e4e7ed' : '#21262d'
+}
+
+/** 系列主色：日间用方案 1 青绿/数据蓝，夜间用原驾驶舱青绿/蓝 */
+function seriesPalette() {
+  return isLight()
+    ? { line1: '#00b894', line2: '#2f6fd6', area1: 'rgba(0, 184, 148, 0.12)', area2: 'rgba(47, 111, 214, 0.12)' }
+    : { line1: '#00d4aa', line2: '#4a90d9', area1: 'rgba(0, 212, 170, 0.12)', area2: 'rgba(74, 144, 217, 0.12)' }
+}
+
+function buildOption(): echarts.EChartsOption {
+  const palette = seriesPalette()
+  return {
+    backgroundColor: 'transparent',
+    tooltip: { trigger: 'axis' },
+    legend: {
+      data: ['新增用户', '新增企业用户'],
+      textStyle: { color: chartTextColor() },
+    },
+    grid: { left: 48, right: 24, top: 48, bottom: 32 },
+    xAxis: {
+      type: 'category',
+      boundaryGap: false,
+      data: months,
+      axisLine: { lineStyle: { color: chartLineColor() } },
+      axisLabel: { color: chartTextColor() },
+    },
+    yAxis: {
+      type: 'value',
+      splitLine: { lineStyle: { color: chartLineColor() } },
+      axisLabel: { color: chartTextColor() },
+    },
+    series: [
+      {
+        name: '新增用户',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        itemStyle: { color: palette.line1 },
+        areaStyle: { color: palette.area1 },
+        data: newUsers,
+      },
+      {
+        name: '新增企业用户',
+        type: 'line',
+        smooth: true,
+        symbol: 'circle',
+        itemStyle: { color: palette.line2 },
+        areaStyle: { color: palette.area2 },
+        data: newEntUsers,
+      },
+    ],
+  } as echarts.EChartsOption
+}
 
 function resizeChart() {
   chart.value?.resize()
@@ -24,54 +96,29 @@ function resizeChart() {
 onMounted(() => {
   if (!chartEl.value) return
   chart.value = echarts.init(chartEl.value)
-  chart.value.setOption({
-    backgroundColor: 'transparent',
-    tooltip: { trigger: 'axis' },
-    legend: {
-      data: ['新增用户', '新增企业用户'],
-      textStyle: { color: '#8b949e' },
-    },
-    grid: { left: 48, right: 24, top: 48, bottom: 32 },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: months,
-      axisLine: { lineStyle: { color: '#21262d' } },
-      axisLabel: { color: '#8b949e' },
-    },
-    yAxis: {
-      type: 'value',
-      splitLine: { lineStyle: { color: '#21262d' } },
-      axisLabel: { color: '#8b949e' },
-    },
-    series: [
-      {
-        name: '新增用户',
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        itemStyle: { color: '#00d4aa' },
-        areaStyle: { color: 'rgba(0, 212, 170, 0.12)' },
-        data: newUsers,
-      },
-      {
-        name: '新增企业用户',
-        type: 'line',
-        smooth: true,
-        symbol: 'circle',
-        itemStyle: { color: '#4a90d9' },
-        areaStyle: { color: 'rgba(74, 144, 217, 0.12)' },
-        data: newEntUsers,
-      },
-    ],
+  chart.value.setOption(buildOption())
+  // 监听 html[data-theme] 属性变化，主题切换时同步 themeMode 触发重绘
+  themeObserver = new MutationObserver(() => {
+    themeMode.value = isLight() ? 'light' : 'dark'
+  })
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
   })
   window.addEventListener('resize', resizeChart)
 })
 
 onUnmounted(() => {
+  themeObserver?.disconnect()
+  themeObserver = null
   window.removeEventListener('resize', resizeChart)
   chart.value?.dispose()
   chart.value = null
+})
+
+// 主题切换时重绘图表（setOption notMerge 避免旧配色残留）
+watch(themeMode, () => {
+  if (chart.value) chart.value.setOption(buildOption(), { notMerge: true })
 })
 
 // 数据统计 · 企业信息录入示例（列参照功能清单 §七.4）

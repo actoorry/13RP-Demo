@@ -51,7 +51,7 @@ onUnmounted(() => {
   gap: 24px;
   height: 36px;
   padding: 0 16px;
-  background: #0a0e13;
+  background: var(--color-bg-panel);
   border-top: 1px solid var(--color-border);
   font-size: 12px;
   color: var(--color-text-secondary);

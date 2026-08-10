@@ -94,7 +94,7 @@ async function handleLogin() {
   border-radius: 12px;
   background: var(--color-bg-panel);
   border: 1px solid var(--color-border);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
 }
 
 .login-brand {

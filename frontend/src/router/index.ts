@@ -24,6 +24,12 @@ const routes: RouteRecordRaw[] = [
         redirect: '/admin/base/account',
         children: [
           {
+            path: 'overview',
+            name: 'base-overview',
+            component: () => import('../views/base/OverviewPanel.vue'),
+            meta: { title: '数据概览' },
+          },
+          {
             path: 'account',
             name: 'base-account',
             component: () => import('../views/base/AccountList.vue'),

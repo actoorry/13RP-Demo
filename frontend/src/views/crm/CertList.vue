@@ -29,6 +29,7 @@ function customerText(row: CrmCert): string {
 const columns: TableColumn[] = [
   { prop: 'customerName', label: '客户', minWidth: '150px', slot: 'customer' },
   { prop: 'certType', label: '证照类型', minWidth: '140px' },
+  { prop: 'certImage', label: '证照图片', width: '90px', slot: 'certImage' },
   { prop: 'expireDate', label: '到期日期', width: '120px' },
   { prop: 'registeredCapital', label: '注册资本', width: '120px', align: 'right', slot: 'registeredCapital' },
   { prop: 'taxNo', label: '税号', minWidth: '150px' },
@@ -95,6 +96,23 @@ async function handleToggleTrade(row: CrmCert) {
 function handleTradeChange(row: CrmCert, val: boolean | string | number) {
   row.tradeAllowedFlag = val ? 1 : 0
   handleToggleTrade(row)
+}
+
+// ---------- 证照图片查看（Demo 占位图，不落库） ----------
+const previewVisible = ref(false)
+const previewRow = ref<CrmCert | null>(null)
+
+function openPreview(row: CrmCert) {
+  previewRow.value = row
+  previewVisible.value = true
+}
+
+function fmtVerified(v?: number): string {
+  return v === 1 ? '已核实' : '未核实'
+}
+
+function fmtTradeAllowed(v?: number): string {
+  return v === 1 ? '允许' : '禁止'
 }
 
 // ---------- 新增 / 编辑 ----------
@@ -224,6 +242,14 @@ onMounted(fetchList)
       <template #customer="{ row }">
         <span>{{ customerText(row) }}</span>
       </template>
+      <template #certImage="{ row }">
+        <el-image
+          :src="'/cert-placeholder.svg'"
+          fit="cover"
+          class="cert-thumb"
+          @click="openPreview(row)"
+        />
+      </template>
       <template #registeredCapital="{ row }">
         <span class="mono">{{ fmtMoney(row.registeredCapital) }}</span>
       </template>
@@ -292,6 +318,29 @@ onMounted(fetchList)
         <el-button type="primary" :loading="saving" @click="handleSave">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog
+      v-model="previewVisible"
+      :title="`证照查看 - ${previewRow?.certType ?? ''}`"
+      width="640px"
+      :close-on-click-modal="false"
+    >
+      <div class="preview-body">
+        <el-image :src="'/cert-placeholder.svg'" fit="contain" class="preview-image" />
+        <el-descriptions :column="1" border class="preview-desc">
+          <el-descriptions-item label="客户">{{ previewRow ? customerText(previewRow) : '-' }}</el-descriptions-item>
+          <el-descriptions-item label="证照类型">{{ previewRow?.certType ?? '-' }}</el-descriptions-item>
+          <el-descriptions-item label="证照编号（税号）">{{ previewRow?.taxNo ?? '-' }}</el-descriptions-item>
+          <el-descriptions-item label="到期日期">{{ previewRow?.expireDate ?? '-' }}</el-descriptions-item>
+          <el-descriptions-item label="注册资本">{{ previewRow ? fmtMoney(previewRow.registeredCapital) : '-' }}</el-descriptions-item>
+          <el-descriptions-item label="资料已核实">{{ previewRow ? fmtVerified(previewRow.verifiedFlag) : '-' }}</el-descriptions-item>
+          <el-descriptions-item label="允许交易">{{ previewRow ? fmtTradeAllowed(previewRow.tradeAllowedFlag) : '-' }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <template #footer>
+        <el-button @click="previewVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -307,5 +356,29 @@ onMounted(fetchList)
   font-size: 12px;
   color: var(--color-text-muted);
   line-height: 1.6;
+}
+
+.cert-thumb {
+  width: 48px;
+  height: 34px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.preview-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.preview-image {
+  width: 80%;
+  max-width: 400px;
+  border-radius: 6px;
+}
+
+.preview-desc {
+  width: 100%;
 }
 </style>

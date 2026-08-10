@@ -5,9 +5,9 @@ export type ThemeMode = 'dark' | 'light'
 /** localStorage 持久化 key（契约写死） */
 const STORAGE_KEY = '13rp-theme'
 
-/** 模块级单例：多组件共享同一主题状态（默认深色 = 现状不变） */
+/** 模块级单例：多组件共享同一主题状态（默认浅色 = 方案 1 霁青简白；已存 dark 的保留 dark） */
 const stored = localStorage.getItem(STORAGE_KEY)
-const theme = ref<ThemeMode>(stored === 'light' ? 'light' : 'dark')
+const theme = ref<ThemeMode>(stored === 'dark' ? 'dark' : 'light')
 
 function applyTheme(mode: ThemeMode) {
   document.documentElement.setAttribute('data-theme', mode)

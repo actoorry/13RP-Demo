@@ -33,7 +33,7 @@ const showDemoEntry = computed(() => route.path !== '/demo')
   border-radius: 20px;
   text-decoration: none;
   letter-spacing: 1px;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

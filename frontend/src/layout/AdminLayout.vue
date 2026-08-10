@@ -18,7 +18,7 @@ const currentUser = computed(() => auth.user?.name || auth.user?.account || '未
 /** 当前激活菜单 = 完整路由路径（el-menu router 模式） */
 const activeMenu = computed(() => route.path)
 
-/** 动态展开当前所在业务域子菜单（共用底座下含嵌套：/admin-common → /admin/base） */
+/** 动态展开当前所在业务域子菜单（系统基础下含嵌套：/admin-common → /admin/base） */
 const openedMenus = computed(() => {
   const path = route.path
   if (path.startsWith('/admin/base')) return ['/admin-common', '/admin/base']
@@ -109,9 +109,10 @@ async function handleLogout() {
     <div class="admin-body">
       <aside class="admin-sider">
         <el-menu :default-active="activeMenu" :default-openeds="openedMenus" router>
-          <!-- 共用底座 -->
+          <!-- 系统基础 -->
           <el-sub-menu index="/admin-common">
-            <template #title>共用底座</template>
+            <template #title>系统基础</template>
+            <el-menu-item index="/admin/base/overview">数据概览</el-menu-item>
             <el-sub-menu index="/admin/base">
               <template #title>基础数据与系统管理</template>
               <el-menu-item index="/admin/base/account">账套管理</el-menu-item>

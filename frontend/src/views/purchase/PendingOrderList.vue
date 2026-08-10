@@ -30,10 +30,15 @@ const columns: TableColumn[] = [
   { prop: 'source', label: '来源', width: '110px' },
   { prop: 'settleMethod', label: '结算方式', width: '110px', slot: 'settleMethod' },
   { prop: 'supplierName', label: '供应商', minWidth: '150px' },
-  { prop: 'payAmount', label: '金额', width: '120px', slot: 'payAmount' },
+  { prop: 'payAmount', label: '金额', width: '130px', align: 'right', slot: 'payAmount' },
   { prop: 'status', label: '状态', width: '100px', slot: 'status' },
   { prop: 'creator', label: '制单人', width: '100px' },
 ]
+
+function fmtMoney(v?: number): string {
+  if (v == null || Number.isNaN(Number(v))) return '-'
+  return Number(v).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 
 async function fetchList() {
   loading.value = true
@@ -262,7 +267,7 @@ onMounted(fetchList)
         </el-tag>
       </template>
       <template #payAmount="{ row }">
-        <span class="mono">{{ row.payAmount ?? '-' }}</span>
+        <span class="mono">{{ fmtMoney(row.payAmount) }}</span>
       </template>
       <template #status="{ row }">
         <el-tag :type="orderStatusType(row)" size="small">{{ orderStatusLabel(row) }}</el-tag>

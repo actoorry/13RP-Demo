@@ -34,9 +34,13 @@ public class MaterialElementController {
 
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
-                                            @RequestParam(required = false) String symbol) {
+                                            @RequestParam(required = false) String symbol,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<MaterialElement> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(symbol != null && !symbol.isBlank(), MaterialElement::getSymbol, symbol)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(MaterialElement::getSymbol, keyword)
+                                .or().like(MaterialElement::getCommonValue, keyword))
                 .orderByAsc(MaterialElement::getSort);
         Page<MaterialElement> page = service.page(new Page<>(query.getPage(), query.getSize()), wrapper);
         return Result.ok(PageQuery.toPageMap(page));

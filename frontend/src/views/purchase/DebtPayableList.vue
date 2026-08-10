@@ -25,9 +25,14 @@ const columns: TableColumn[] = [
   { prop: 'id', label: 'ID', width: '70px' },
   { prop: 'inboundNo', label: '入库单号', minWidth: '160px' },
   { prop: 'invoiceNo', label: '发票号', minWidth: '150px' },
-  { prop: 'amount', label: '金额', width: '120px', slot: 'amount' },
+  { prop: 'amount', label: '金额', width: '130px', align: 'right', slot: 'amount' },
   { prop: 'status', label: '状态', width: '100px', slot: 'status' },
 ]
+
+function fmtMoney(v?: number): string {
+  if (v == null || Number.isNaN(Number(v))) return '-'
+  return Number(v).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 
 async function fetchList() {
   loading.value = true
@@ -166,7 +171,7 @@ onMounted(fetchList)
       @size-change="handleSizeChange"
     >
       <template #amount="{ row }">
-        <span class="mono">{{ row.amount ?? '-' }}</span>
+        <span class="mono">{{ fmtMoney(row.amount) }}</span>
       </template>
       <template #status="{ row }">
         <el-tag :type="row.status === 'SETTLED' ? 'success' : 'info'" size="small">

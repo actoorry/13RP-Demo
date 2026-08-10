@@ -8,7 +8,9 @@ import type { TableColumn } from '../../components/common/DataTable.vue'
 import DailyReportList from './DailyReportList.vue'
 import InvoiceApplyList from './InvoiceApplyList.vue'
 import { saleOrderApi } from '../../api/sale'
+import { customerApi } from '../../api/crm'
 import type { SaleOrder } from '../../api/sale'
+import type { CrmCustomer } from '../../api/crm'
 
 /** 销售域容器：销售明细（默认）/ 业务日报 / 开票申请，标签切换子页 */
 const activeTab = ref('order')
@@ -20,13 +22,29 @@ const page = ref(1)
 const size = ref(10)
 const query = reactive<{ keyword?: string }>({})
 
+/** 客户下拉选项（CRM 客户基本资料）。 */
+const customerOptions = ref<CrmCustomer[]>([])
+
+async function loadCustomers() {
+  try {
+    const data = await customerApi.list({ page: 1, size: 100 })
+    customerOptions.value = data?.list || []
+  } catch {
+    customerOptions.value = []
+  }
+}
+
+function customerName(id?: number): string {
+  return customerOptions.value.find((c) => c.id === id)?.name || (id != null ? String(id) : '-')
+}
+
 function fmtMoney(v?: number): string {
   if (v == null || Number.isNaN(Number(v))) return '-'
   return Number(v).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function customerText(row: SaleOrder): string {
-  return row.customerName || (row.customerId != null ? String(row.customerId) : '-')
+  return row.customerName || customerName(row.customerId)
 }
 
 const columns: TableColumn[] = [
@@ -98,6 +116,7 @@ const form = reactive<SaleOrder>({
 
 const rules: FormRules = {
   orderNo: [{ required: true, message: '请输入单号', trigger: 'blur' }],
+  customerId: [{ required: true, message: '请选择客户', trigger: 'change' }],
 }
 
 function openCreate() {
@@ -173,7 +192,10 @@ async function handleDelete(row: SaleOrder) {
   }
 }
 
-onMounted(fetchList)
+onMounted(() => {
+  fetchList()
+  loadCustomers()
+})
 </script>
 
 <template>
@@ -249,8 +271,15 @@ onMounted(fetchList)
         <el-form-item label="单号" prop="orderNo">
           <el-input v-model="form.orderNo" placeholder="如：SO-20260805-301" />
         </el-form-item>
-        <el-form-item label="客户 ID">
-          <el-input-number v-model="form.customerId" :min="0" style="width: 100%" placeholder="客户 id" />
+        <el-form-item label="客户" prop="customerId">
+          <el-select v-model="form.customerId" placeholder="选择客户" clearable filterable style="width: 100%">
+            <el-option
+              v-for="c in customerOptions"
+              :key="c.id"
+              :value="c.id"
+              :label="c.name || ('客户#' + c.id)"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="品名">
           <el-input v-model="form.productName" placeholder="如：电解铜" />

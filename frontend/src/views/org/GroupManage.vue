@@ -6,6 +6,7 @@ import SearchBar from '../../components/common/SearchBar.vue'
 import DataTable from '../../components/common/DataTable.vue'
 import type { TableColumn } from '../../components/common/DataTable.vue'
 import { groupApi } from '../../api/org'
+import { customerApi } from '../../api/crm'
 import type { GroupTransferParams, OrgGroup } from '../../api/org'
 
 const loading = ref(false)
@@ -115,6 +116,7 @@ async function handleSave() {
 // ---------- 划拨 / 迁移 ----------
 const transferVisible = ref(false)
 const transferSaving = ref(false)
+const customerOptions = ref<{ id: number; name: string }[]>([])
 const transferForm = reactive<GroupTransferParams>({
   transferType: 'company',
   targetId: undefined,
@@ -128,19 +130,40 @@ const TRANSFER_TYPES = [
   { value: 'owner', label: '批量迁移主要负责人' },
 ]
 
-function openTransfer() {
+async function openTransfer() {
   Object.assign(transferForm, {
     transferType: 'company',
     targetId: undefined,
     ownerId: undefined,
     customerIds: [],
   })
+  // 拉取 CRM 客户列表供选择（首次拉取缓存）
+  if (!customerOptions.value.length) {
+    try {
+      const data = await customerApi.list({ page: 1, size: 100 })
+      const records = ((data as Record<string, unknown>).list || (data as Record<string, unknown>).records || []) as { id: number; name: string }[]
+      customerOptions.value = records.map((c) => ({
+        id: c.id,
+        name: c.name,
+      }))
+    } catch {
+      customerOptions.value = []
+    }
+  }
   transferVisible.value = true
 }
 
 async function handleTransfer() {
-  if (!transferForm.targetId && transferForm.transferType !== 'company') {
-    ElMessage.warning(transferForm.transferType === 'owner' ? '请输入主要负责人 ID' : '请输入目标 ID')
+  if (!transferForm.customerIds?.length) {
+    ElMessage.warning('请先勾选要划拨/迁移的客户')
+    return
+  }
+  if (transferForm.transferType === 'group' && !transferForm.targetId) {
+    ElMessage.warning('请选择目标组')
+    return
+  }
+  if (transferForm.transferType === 'owner' && !transferForm.ownerId) {
+    ElMessage.warning('请输入主要负责人 ID')
     return
   }
   transferSaving.value = true
@@ -216,7 +239,7 @@ onMounted(fetchList)
       </template>
     </el-dialog>
 
-    <el-dialog v-model="transferVisible" title="划拨到公司 / 划拨到组 / 批量迁移主要负责人" width="480px" :close-on-click-modal="false">
+    <el-dialog v-model="transferVisible" title="划拨到公司 / 划拨到组 / 批量迁移主要负责人" width="520px" :close-on-click-modal="false">
       <el-form label-width="110px">
         <el-form-item label="划拨类型">
           <el-select v-model="transferForm.transferType" style="width: 100%">
@@ -228,14 +251,39 @@ onMounted(fetchList)
             />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="transferForm.transferType === 'group'" label="目标组ID">
-          <el-input-number v-model="transferForm.targetId" :min="1" style="width: 100%" />
+        <el-form-item label="选择客户" required>
+          <el-select
+            v-model="transferForm.customerIds"
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+            placeholder="勾选要划拨/迁移的客户（可多选）"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="c in customerOptions"
+              :key="c.id"
+              :value="c.id"
+              :label="c.name"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item v-if="transferForm.transferType === 'group'" label="目标组">
+          <el-select v-model="transferForm.targetId" placeholder="选择目标组" style="width: 100%">
+            <el-option
+              v-for="g in list"
+              :key="g.id"
+              :value="g.id"
+              :label="g.groupName"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item v-if="transferForm.transferType === 'owner'" label="主要负责人ID">
           <el-input-number v-model="transferForm.ownerId" :min="1" style="width: 100%" />
         </el-form-item>
         <el-form-item v-if="transferForm.transferType === 'company'" label="说明">
-          <span class="page-tip">将当前选中的客户划拨到公司公共池（默认对全部客户生效）</span>
+          <span class="page-tip">将选中的客户划拨到公司公共池（从当前组移除）</span>
         </el-form-item>
       </el-form>
       <template #footer>

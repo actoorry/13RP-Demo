@@ -34,9 +34,12 @@ public class PackageStandardController {
 
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
-                                            @RequestParam(required = false) String packageName) {
+                                            @RequestParam(required = false) String packageName,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<PackageStandard> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(packageName != null && !packageName.isBlank(), PackageStandard::getPackageName, packageName)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(PackageStandard::getPackageName, keyword))
                 .orderByAsc(PackageStandard::getId);
         Page<PackageStandard> page = service.page(new Page<>(query.getPage(), query.getSize()), wrapper);
         return Result.ok(PageQuery.toPageMap(page));

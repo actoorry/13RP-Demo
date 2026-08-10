@@ -33,9 +33,12 @@ public class PayableController {
 
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
-                                            @RequestParam(required = false) String status) {
+                                            @RequestParam(required = false) String status,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<Payable> w = new LambdaQueryWrapper<>();
         w.eq(status != null && !status.isBlank(), Payable::getStatus, status)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(Payable::getSupplierName, keyword))
                 .orderByAsc(Payable::getDueDate);
         return Result.ok(PageQuery.toPageMap(service.page(new Page<>(query.getPage(), query.getSize()), w)));
     }

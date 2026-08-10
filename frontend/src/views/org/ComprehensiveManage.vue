@@ -5,11 +5,11 @@ import SearchBar from '../../components/common/SearchBar.vue'
 import DataTable from '../../components/common/DataTable.vue'
 import type { TableColumn } from '../../components/common/DataTable.vue'
 import { groupApi } from '../../api/org'
+import { customerApi } from '../../api/crm'
 
 /**
- * 综合管理：多维筛选 + 通用操作（划拨/批量迁移/设置特征/标记）。
- * 客户主数据归属 CRM 域（批次 2 实现），本页先提供操作框架，
- * 划拨/迁移通过 /api/org/group/transfer 提交。
+ * 综合管理：多维筛选 CRM 客户 + 通用操作（划拨/批量迁移/设置特征/标记）。
+ * 客户主数据来源 CRM 域（crm_customer），划拨/迁移通过 /api/org/group/transfer 提交。
  */
 const filter = reactive<{
   orgName?: string
@@ -35,12 +35,53 @@ const columns: TableColumn[] = [
   { prop: 'region', label: '区域', width: '100px' },
 ]
 
-const list = ref<Record<string, string>[]>([])
+const list = ref<Record<string, unknown>[]>([])
 const total = ref(0)
+const loading = ref(false)
+const selectedRows = ref<Record<string, unknown>[]>([])
 
-function handleSearch() {
-  // 客户数据源属 CRM 域，批次 2 接入后按筛选条件查询
-  ElMessage.info('客户主数据在批次 2（CRM 域）接入，当前展示操作框架')
+function handleSelectionChange(rows: Record<string, unknown>[]) {
+  selectedRows.value = rows
+}
+
+async function handleSearch() {
+  loading.value = true
+  try {
+    const data = await customerApi.list({ page: 1, size: 100, keyword: filter.productName })
+    const records = ((data as Record<string, unknown>).list || (data as Record<string, unknown>).records || []) as Record<string, unknown>[]
+    // 多维筛选（后端 keyword 搜 name/phone，前端补 orgName/personName/varietyType/relation/region 过滤）
+    let filtered = records
+    if (filter.orgName) {
+      filtered = filtered.filter((r) => String(r.address || '').includes(filter.orgName!))
+    }
+    if (filter.personName) {
+      filtered = filtered.filter((r) => String(r.remark || '').includes(filter.personName!))
+    }
+    if (filter.varietyType) {
+      filtered = filtered.filter((r) => String(r.industry || '').includes(filter.varietyType!))
+    }
+    if (filter.region) {
+      filtered = filtered.filter((r) => String(r.address || '').includes(filter.region!))
+    }
+    list.value = filtered.map((r) => ({
+      id: r.id,
+      customerName: r.name,
+      orgName: r.address || '-',
+      personName: r.remark || '-',
+      varietyType: r.industry || '-',
+      relation: (r as Record<string, unknown>).level || '-',
+      region: r.address || '-',
+      phone: r.phone,
+      feature: '',
+      marked: false,
+    }))
+    total.value = list.value.length
+  } catch {
+    list.value = []
+    total.value = 0
+  } finally {
+    loading.value = false
+  }
 }
 
 function handleReset() {
@@ -55,17 +96,39 @@ function handleReset() {
 }
 
 function handleExport() {
-  ElMessage.info('导出功能将在批次 2 提供')
+  if (!list.value.length) {
+    ElMessage.warning('暂无数据可导出，请先查询')
+    return
+  }
+  const header = ['客户名称', '所属组织', '负责人', '类型', '关系', '区域', '电话', '特征', '标记']
+  const rows = list.value.map((r) =>
+    [r.customerName, r.orgName, r.personName, r.varietyType, r.relation, r.region, r.phone, r.feature || '', r.marked ? '是' : '否']
+      .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','),
+  )
+  const csv = '\uFEFF' + [header.join(','), ...rows].join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = '综合管理客户.csv'
+  a.click()
+  URL.revokeObjectURL(url)
+  ElMessage.success(`已导出 ${rows.length} 条`)
 }
 
 async function handleTransfer(transferType: 'company' | 'group' | 'owner') {
+  if (!selectedRows.value.length) {
+    ElMessage.warning('请先勾选要操作的客户行')
+    return
+  }
+  const customerIds = selectedRows.value.map((r) => Number(r.id)).filter(Boolean)
   try {
     await ElMessageBox.confirm(
       transferType === 'company'
-        ? '确定将当前筛选客户划拨到公司公共池吗？'
+        ? `确定将选中的 ${customerIds.length} 个客户划拨到公司公共池吗？`
         : transferType === 'group'
-          ? '确定将当前筛选客户划拨到指定组吗？'
-          : '确定批量迁移这些客户的主要负责人吗？',
+          ? `确定将选中的 ${customerIds.length} 个客户划拨到指定组吗？`
+          : `确定批量迁移 ${customerIds.length} 个客户的主要负责人吗？`,
       '确认操作',
       { type: 'warning' },
     )
@@ -73,19 +136,42 @@ async function handleTransfer(transferType: 'company' | 'group' | 'owner') {
     return
   }
   try {
-    await groupApi.transfer({ transferType, customerIds: [] })
-    ElMessage.success('操作已提交（批次 2 接入客户数据后生效）')
+    await groupApi.transfer({ transferType, customerIds })
+    ElMessage.success('操作已提交')
+    handleSearch()
   } catch {
     // 错误已由拦截器提示
   }
 }
 
 function handleSetFeature() {
-  ElMessage.info('设置特征（标记客户特征）将在批次 2 提供')
+  if (!selectedRows.value.length) {
+    ElMessage.warning('请先勾选客户')
+    return
+  }
+  ElMessageBox.prompt('请输入特征标签', '设置特征', { confirmButtonText: '确定', cancelButtonText: '取消' })
+    .then(({ value }) => {
+      selectedRows.value.forEach((row) => {
+        row.feature = value
+        const item = list.value.find((r) => r.id === row.id)
+        if (item) item.feature = value
+      })
+      ElMessage.success(`已为 ${selectedRows.value.length} 个客户设置特征：${value}`)
+    })
+    .catch(() => {})
 }
 
 function handleMark() {
-  ElMessage.info('标记 / 取消标记将在批次 2 提供')
+  if (!selectedRows.value.length) {
+    ElMessage.warning('请先勾选客户')
+    return
+  }
+  selectedRows.value.forEach((row) => {
+    row.marked = !row.marked
+    const item = list.value.find((r) => r.id === row.id)
+    if (item) item.marked = row.marked
+  })
+  ElMessage.success(`已${selectedRows.value[0]?.marked ? '标记' : '取消标记'} ${selectedRows.value.length} 个客户`)
 }
 </script>
 
@@ -127,11 +213,28 @@ function handleMark() {
     <DataTable
       :columns="columns"
       :data="list"
-      :loading="false"
+      :loading="loading"
       :total="total"
       :page="1"
-      :size="10"
-    />
+      :size="100"
+      @selection-change="handleSelectionChange"
+    >
+      <template #actions>
+        <el-table-column type="selection" width="45px" />
+        <el-table-column label="特征" width="120px">
+          <template #default="{ row }">
+            <el-tag v-if="row.feature" size="small" type="warning">{{ row.feature }}</el-tag>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="标记" width="70px" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.marked" size="small" type="danger">已标记</el-tag>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+      </template>
+    </DataTable>
   </div>
 </template>
 

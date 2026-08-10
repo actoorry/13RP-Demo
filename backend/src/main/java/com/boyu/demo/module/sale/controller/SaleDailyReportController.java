@@ -39,7 +39,9 @@ public class SaleDailyReportController {
                                             @RequestParam(required = false) LocalDate reportDate,
                                             @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<SaleDailyReport> w = new LambdaQueryWrapper<>();
-        // 业务日报无文本列（全部为日期/数字），keyword 不再对 report_date 等列 LIKE，仅支持 reportDate 精确筛选
+        // keyword 保留但不参与过滤：业务日报实体全部为日期/数字/id 列（reportDate/contactCnt/leadCnt/dealCnt/orgId），
+        // 无任何文本列可做 LIKE。keyword 参数继续接收（前端 SearchBar 统一传参）但不参与查询。
+        // 前端该页搜索框应移除（无文本可搜），此项标记"前端后续处理"。
         w.eq(reportDate != null, SaleDailyReport::getReportDate, reportDate)
                 .orderByDesc(SaleDailyReport::getReportDate);
         return Result.ok(PageQuery.toPageMap(service.page(new Page<>(query.getPage(), query.getSize()), w)));

@@ -34,9 +34,13 @@ public class SupplierGradeController {
 
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
-                                            @RequestParam(required = false) String grade) {
+                                            @RequestParam(required = false) String grade,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<SupplierGrade> w = new LambdaQueryWrapper<>();
         w.eq(grade != null && !grade.isBlank(), SupplierGrade::getGrade, grade)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(SupplierGrade::getSupplierName, keyword)
+                                .or().like(SupplierGrade::getGrade, keyword))
                 .orderByAsc(SupplierGrade::getId);
         return Result.ok(PageQuery.toPageMap(service.page(new Page<>(query.getPage(), query.getSize()), w)));
     }

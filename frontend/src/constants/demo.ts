@@ -57,7 +57,7 @@ export const ROUTES: RouteDef[] = [
 
 export const PHASE_LABELS: Record<string, string> = {
   INIT: '初始就绪',
-  EVENT_INJECTED: '事件已注入',
+  EVENT_INJECTED: '模拟宇宙已创建',
   SIMULATING: '推演中',
   SIMULATION_DONE: '推演完成',
   OPTIMIZING: '多目标寻优',

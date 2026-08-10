@@ -40,7 +40,7 @@ onUnmounted(() => {
       <span class="mono">{{ timeText }}</span>
     </div>
 
-    <div class="status-item status-version mono">V0.3</div>
+    <div class="status-item status-version mono">V0.4</div>
   </div>
 </template>
 

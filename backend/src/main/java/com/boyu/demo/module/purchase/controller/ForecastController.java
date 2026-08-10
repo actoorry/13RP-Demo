@@ -34,9 +34,13 @@ public class ForecastController {
 
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
-                                            @RequestParam(required = false) String planType) {
+                                            @RequestParam(required = false) String planType,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<Forecast> w = new LambdaQueryWrapper<>();
         w.eq(planType != null && !planType.isBlank(), Forecast::getPlanType, planType)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(Forecast::getPlanType, keyword)
+                                .or().like(Forecast::getPlanName, keyword))
                 .orderByDesc(Forecast::getId);
         return Result.ok(PageQuery.toPageMap(service.page(new Page<>(query.getPage(), query.getSize()), w)));
     }

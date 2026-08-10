@@ -31,6 +31,10 @@ export interface ProductNode {
   name: string
   /** 节点类型：product 品名 / grade 牌号 / material 材质 */
   type: string
+  /** 牌号（材质节点的归属牌号；编辑材质时需保留，否则提交会清空） */
+  grade?: string
+  /** 状态：1 正常 / 0 作废（编辑时回填，避免把作废节点复活） */
+  status?: number
   children?: ProductNode[]
 }
 

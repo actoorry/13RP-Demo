@@ -97,19 +97,26 @@ watch(
 
 <template>
   <div class="app-shell">
-    <div class="demo-theme-toggle">
-      <el-tooltip content="返回管理端" placement="bottom">
-        <button
-          type="button"
-          class="back-admin"
-          aria-label="返回管理端"
-          @click="router.push('/admin')"
-        >
-          <span class="back-admin-text">返回管理端</span>
-        </button>
-      </el-tooltip>
-      <ThemeToggle />
-    </div>
+    <!-- 顶栏：左侧品牌标题，右侧返回管理端 + 主题切换 -->
+    <header class="demo-topbar">
+      <div class="demo-brand">
+        <span class="demo-brand-title">13RP 决策演示</span>
+        <span class="demo-brand-sub">博宇宙十三维决策操作系统</span>
+      </div>
+      <div class="demo-theme-toggle">
+        <el-tooltip content="返回管理端" placement="bottom">
+          <button
+            type="button"
+            class="back-admin"
+            aria-label="返回管理端"
+            @click="router.push('/admin')"
+          >
+            <span class="back-admin-text">返回管理端</span>
+          </button>
+        </el-tooltip>
+        <ThemeToggle />
+      </div>
+    </header>
 
     <aside class="left-panel panel">
       <DashboardPanel />
@@ -148,12 +155,44 @@ watch(
   min-height: 480px;
 }
 
-/* 右上角工具区：绝对定位右上角，不参与三屏 grid 布局，z-index 置顶；左返回管理端、右主题切换 */
-.demo-theme-toggle {
-  position: absolute;
-  top: 10px;
-  right: 10px;
+/* 顶栏：占首行 grid 区域（与 global.css 的 grid-template-areas 对应） */
+.demo-topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg-panel);
   z-index: 1000;
+}
+
+/* 品牌标题区：主标题 + 副标题垂直对齐，风格与管理端顶栏一致 */
+.demo-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.demo-brand-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.demo-brand-sub {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* 顶栏右侧工具区：随顶栏布局，不再绝对定位；左返回管理端、右主题切换 */
+.demo-theme-toggle {
   display: flex;
   align-items: center;
   gap: 8px;

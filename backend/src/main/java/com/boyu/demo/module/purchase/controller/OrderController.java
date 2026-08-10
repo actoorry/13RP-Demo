@@ -45,10 +45,14 @@ public class OrderController {
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
                                             @RequestParam(required = false) String status,
-                                            @RequestParam(required = false) String settlementStatus) {
+                                            @RequestParam(required = false) String settlementStatus,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<PurchaseOrder> w = new LambdaQueryWrapper<>();
         w.eq(status != null && !status.isBlank(), PurchaseOrder::getStatus, status)
                 .eq(settlementStatus != null && !settlementStatus.isBlank(), PurchaseOrder::getSettlementStatus, settlementStatus)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(PurchaseOrder::getOrderNo, keyword)
+                                .or().like(PurchaseOrder::getSupplierName, keyword))
                 .orderByDesc(PurchaseOrder::getId);
         return Result.ok(PageQuery.toPageMap(service.page(new Page<>(query.getPage(), query.getSize()), w)));
     }

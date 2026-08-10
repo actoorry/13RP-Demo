@@ -38,6 +38,8 @@ const emit = defineEmits<{
   'update:size': [number]
   'page-change': [number]
   'size-change': [number]
+  /** 表格勾选变化（供父组件做批量操作），透传 el-table 的 selection-change */
+  'selection-change': [unknown[]]
 }>()
 </script>
 
@@ -49,6 +51,7 @@ const emit = defineEmits<{
       :row-key="rowKey"
       :row-class-name="props.rowClassName"
       class="data-table-body"
+      @selection-change="(rows: unknown[]) => emit('selection-change', rows)"
     >
       <el-table-column
         v-for="col in columns"

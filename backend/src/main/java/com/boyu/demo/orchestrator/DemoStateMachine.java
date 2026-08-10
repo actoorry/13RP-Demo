@@ -42,7 +42,7 @@ public class DemoStateMachine {
     private final TimelineController timeline;
 
     private volatile DemoPhase phase = DemoPhase.INIT;
-    private volatile String lastMessage = "演示就绪，等待事件注入";
+    private volatile String lastMessage = "演示就绪，等待创建模拟宇宙";
 
     public DemoStateMachine(WebSocketSessionManager ws, TimelineController timeline) {
         this.ws = ws;
@@ -82,7 +82,7 @@ public class DemoStateMachine {
         DemoPhase from = this.phase;
         this.phase = DemoPhase.INIT;
         log.info("状态迁移: {} -> {}", from, DemoPhase.INIT);
-        broadcastState("演示已重置，等待事件注入");
+        broadcastState("演示已重置，等待创建模拟宇宙");
     }
 
     public DemoPhase getPhase() {
@@ -95,8 +95,8 @@ public class DemoStateMachine {
 
     private static String defaultMessage(DemoPhase p) {
         return switch (p) {
-            case INIT -> "演示就绪，等待事件注入";
-            case EVENT_INJECTED -> "核心供应商「北方铜业」缺货事件已注入";
+            case INIT -> "演示就绪，等待创建模拟宇宙";
+            case EVENT_INJECTED -> "模拟宇宙已创建，初始事件：北方铜业停产、电解铜断供 5 天";
             case SIMULATING -> "7RP 推演启动，342 条路径并行回放...";
             case SIMULATION_DONE -> "推演完成：342 条路径全部跑完";
             case OPTIMIZING -> "8RP 多目标寻优启动...";

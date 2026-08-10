@@ -34,9 +34,12 @@ public class MobileConfigController {
 
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
-                                            @RequestParam(required = false) String productName) {
+                                            @RequestParam(required = false) String productName,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<MobileConfig> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(productName != null && !productName.isBlank(), MobileConfig::getProductName, productName)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(MobileConfig::getProductName, keyword))
                 .orderByAsc(MobileConfig::getSort);
         Page<MobileConfig> page = service.page(new Page<>(query.getPage(), query.getSize()), wrapper);
         return Result.ok(PageQuery.toPageMap(page));

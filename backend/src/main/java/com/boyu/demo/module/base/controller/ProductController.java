@@ -39,11 +39,14 @@ public class ProductController {
     public Result<Map<String, Object>> list(PageQuery query,
                                             @RequestParam(required = false) Long accountId,
                                             @RequestParam(required = false) String name,
-                                            @RequestParam(required = false) Integer status) {
+                                            @RequestParam(required = false) Integer status,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(accountId != null, Product::getAccountId, accountId)
                 .like(name != null && !name.isBlank(), Product::getName, name)
                 .eq(status != null, Product::getStatus, status)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(Product::getName, keyword))
                 .orderByAsc(Product::getSort);
         Page<Product> page = service.page(new Page<>(query.getPage(), query.getSize()), wrapper);
         return Result.ok(PageQuery.toPageMap(page));

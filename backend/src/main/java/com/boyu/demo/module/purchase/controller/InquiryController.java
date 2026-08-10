@@ -44,10 +44,15 @@ public class InquiryController {
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
                                             @RequestParam(required = false) String inquiryType,
-                                            @RequestParam(required = false) String status) {
+                                            @RequestParam(required = false) String status,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<Inquiry> w = new LambdaQueryWrapper<>();
         w.eq(inquiryType != null && !inquiryType.isBlank(), Inquiry::getInquiryType, inquiryType)
                 .eq(status != null && !status.isBlank(), Inquiry::getStatus, status)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(Inquiry::getInquiryNo, keyword)
+                                .or().like(Inquiry::getProductName, keyword)
+                                .or().like(Inquiry::getSupplierName, keyword))
                 .orderByDesc(Inquiry::getId);
         return Result.ok(PageQuery.toPageMap(service.page(new Page<>(query.getPage(), query.getSize()), w)));
     }

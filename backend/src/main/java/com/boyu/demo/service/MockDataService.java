@@ -77,8 +77,8 @@ public class MockDataService {
     }
 
     /**
-     * 注入供应商缺货：北方铜业置 SHORTAGE，中原铜业（GANZHOU）与
-     * 南方铜业（NINGBO）置 TIGHT（供应链连带紧张，让前端图例"紧张"真实生效），并记录持续天数。
+     * 创建模拟宇宙时注入初始事件（供应商缺货）：北方铜业置 SHORTAGE，中原铜业（GANZHOU）与
+     * 南方铜业（NINGBO）置 TIGHT（供应链连带紧张，让前端图例"紧张"真实生效），并记录断供持续天数。
      */
     public void injectSupplierShortage(int duration) {
         shortageActive = true;
@@ -86,15 +86,15 @@ public class MockDataService {
         nodes.put("BAOTOU", SupplierStatus.SHORTAGE);
         nodes.put("GANZHOU", SupplierStatus.TIGHT);
         nodes.put("NINGBO", SupplierStatus.TIGHT);
-        log.debug("Supplier shortage injected: BAOTOU -> SHORTAGE, GANZHOU/NINGBO -> TIGHT, duration={}d", shortageDurationDays);
+        log.debug("Simulation universe created, initial shortage event: BAOTOU -> SHORTAGE, GANZHOU/NINGBO -> TIGHT, duration={}d", shortageDurationDays);
     }
 
-    /** 便捷重载：默认缺货 5 天。 */
+    /** 便捷重载：默认断供 5 天。 */
     public void injectSupplierShortage() {
         injectSupplierShortage(5);
     }
 
-    /** 供应商缺货持续天数（天）。 */
+    /** 供应商断供持续天数（天）。 */
     public int getShortageDurationDays() {
         return shortageDurationDays;
     }

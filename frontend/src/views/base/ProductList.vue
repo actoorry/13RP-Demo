@@ -111,11 +111,9 @@ function openCreateChild() {
   form.parentId = node.id
   if (node.type === 'product') {
     formType.value = 'grade'
-    form.name = node.name
     dialogTitle.value = `为品名「${node.name}」新增牌号`
   } else if (node.type === 'grade') {
     formType.value = 'material'
-    form.name = node.name
     form.grade = node.name
     dialogTitle.value = `为牌号「${node.name}」新增材质`
   } else {
@@ -134,6 +132,8 @@ function openEdit() {
   resetForm()
   formType.value = (node.type as 'product' | 'grade' | 'material') || 'product'
   form.id = node.id
+  // 回填状态：避免编辑作废节点时被 resetForm 的默认 status=1 复活
+  form.status = node.status ?? 1
   if (node.type === 'product') {
     form.name = node.name
     dialogTitle.value = `编辑品名「${node.name}」`
@@ -142,6 +142,8 @@ function openEdit() {
     dialogTitle.value = `编辑牌号「${node.name}」`
   } else {
     form.material = node.name
+    // 材质节点保留归属牌号：openEdit 不设置 form.grade 会导致提交时 grade 被清空
+    form.grade = node.grade ?? ''
     dialogTitle.value = `编辑材质「${node.name}」`
   }
   dialogVisible.value = true
@@ -160,11 +162,12 @@ function buildPayload(): BaseProduct {
     }
   }
   if (formType.value === 'grade') {
-    return { ...base, name: form.name, grade: form.grade, parentId: form.parentId }
+    // 牌号节点的显示名（name）即牌号本身：树 label 取 name，必须与用户输入一致
+    return { ...base, name: form.grade, grade: form.grade, parentId: form.parentId }
   }
   return {
     ...base,
-    name: form.name,
+    name: form.material,
     grade: form.grade,
     material: form.material,
     parentId: form.parentId,

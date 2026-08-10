@@ -67,13 +67,25 @@ public class GroupService {
      */
     @Transactional
     public Result<Void> transfer(Map<String, Object> body) {
+        // 兼容前端 transferType（company/group/owner）与 action（COMPANY/GROUP/OWNER）两套字段名
         String action = str(body, "action");
+        if (action == null || action.isBlank()) {
+            action = str(body, "transferType");
+        }
         List<Long> customerIds = ids(body.get("customerIds"));
         if (action == null || action.isBlank()) {
-            return Result.error("缺少划拨类型 action");
+            return Result.error("请选择划拨类型");
         }
         if (customerIds.isEmpty()) {
-            return Result.error("未选择客户 customerIds");
+            return Result.error("请先在列表中勾选客户");
+        }
+        // 兼容前端 targetId（划拨到组用）与 targetGroupId、ownerId 与 targetOwnerId：
+        // 统一回写到 body Map，下方 switch 内已有的 longVal(body.get("targetGroupId")) 等会读到。
+        if (longVal(body.get("targetGroupId")) == null && longVal(body.get("targetId")) != null) {
+            body.put("targetGroupId", longVal(body.get("targetId")));
+        }
+        if (longVal(body.get("targetOwnerId")) == null && longVal(body.get("ownerId")) != null) {
+            body.put("targetOwnerId", longVal(body.get("ownerId")));
         }
         switch (action.toUpperCase()) {
             case "GROUP" -> {
@@ -132,7 +144,9 @@ public class GroupService {
             row.put("groupName", g.getGroupName());
             row.put("ownerId", g.getOwnerId());
             row.put("ownerName", g.getOwnerName());
-            row.put("createTime", g.getCreateTime());
+            row.put("createTime", g.getCreateTime() != null
+                    ? g.getCreateTime().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    : null);
             row.put("customerCnt", groupCustomerMapper.selectCount(new LambdaQueryWrapper<OrgGroupCustomer>()
                     .eq(OrgGroupCustomer::getGroupId, g.getId())));
             rows.add(row);

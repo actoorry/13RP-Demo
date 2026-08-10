@@ -35,10 +35,14 @@ public class AccountController {
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
                                             @RequestParam(required = false) String name,
-                                            @RequestParam(required = false) Integer status) {
+                                            @RequestParam(required = false) Integer status,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<Account> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(name != null && !name.isBlank(), Account::getName, name)
                 .eq(status != null, Account::getStatus, status)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(Account::getName, keyword)
+                                .or().like(Account::getCode, keyword))
                 .orderByAsc(Account::getId);
         Page<Account> page = service.page(new Page<>(query.getPage(), query.getSize()), wrapper);
         return Result.ok(PageQuery.toPageMap(page));

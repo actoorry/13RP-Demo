@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 认证/权限查询：登录时加载角色、菜单、权限码（由 AuthMapper.java 注解迁移至 XML，行为完全一致） -->
+<mapper namespace="com.boyu.demo.module.org.mapper.AuthMapper">
+
+    <!-- 当前人员的全部权限码（BUTTON 类型菜单的 perms）。 -->
+    <select id="selectPermissionCodes" resultType="java.lang.String">
+        SELECT DISTINCT m.perms
+        FROM sys_menu m
+        JOIN sys_role_menu rm ON m.id = rm.menu_id
+        JOIN sys_person_role pr ON rm.role_id = pr.role_id
+        WHERE pr.person_id = #{personId}
+          AND m.type = 'BUTTON'
+          AND m.perms IS NOT NULL
+    </select>
+
+    <!-- 当前人员的菜单路径（MENU 类型，排序稳定）。 -->
+    <select id="selectMenuPaths" resultType="java.lang.String">
+        SELECT m.path
+        FROM sys_menu m
+        JOIN sys_role_menu rm ON m.id = rm.menu_id
+        JOIN sys_person_role pr ON rm.role_id = pr.role_id
+        WHERE pr.person_id = #{personId}
+          AND m.type = 'MENU'
+          AND m.path IS NOT NULL
+        GROUP BY m.path
+        ORDER BY MAX(m.sort)
+    </select>
+
+    <!-- 当前人员的角色 id 列表。 -->
+    <select id="selectRoleIds" resultType="java.lang.Long">
+        SELECT r.id
+        FROM sys_role r
+        JOIN sys_person_role pr ON r.id = pr.role_id
+        WHERE pr.person_id = #{personId}
+    </select>
+
+    <!-- 当前人员的角色名列表（权限来源：系统管理/组长/组员）。 -->
+    <select id="selectRoleNames" resultType="java.lang.String">
+        SELECT r.name
+        FROM sys_role r
+        JOIN sys_person_role pr ON r.id = pr.role_id
+        WHERE pr.person_id = #{personId}
+        ORDER BY r.sort
+    </select>
+
+    <!-- 当前人员的权限明细（BUTTON 菜单：权限码 + 中文名 + 所属模块前缀）。 -->
+    <select id="selectPermissionDetails" resultType="java.util.Map">
+        SELECT m.perms AS code, m.name AS name,
+               SUBSTRING_INDEX(m.perms, ':', 1) AS module
+        FROM sys_menu m
+        JOIN sys_role_menu rm ON m.id = rm.menu_id
+        JOIN sys_person_role pr ON rm.role_id = pr.role_id
+        WHERE pr.person_id = #{personId}
+          AND m.type = 'BUTTON'
+          AND m.perms IS NOT NULL
+    </select>
+
+    <!-- 为人员绑定一个角色（幂等）。 -->
+    <insert id="insertPersonRole">
+        INSERT IGNORE INTO sys_person_role (person_id, role_id)
+        VALUES (#{personId}, #{roleId})
+    </insert>
+
+    <!-- 清空人员的全部角色（重建用）。 -->
+    <delete id="deletePersonRoles">
+        DELETE FROM sys_person_role WHERE person_id = #{personId}
+    </delete>
+
+</mapper>

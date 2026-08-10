@@ -43,9 +43,13 @@ public class ApplyController {
 
     @GetMapping
     public Result<Map<String, Object>> list(PageQuery query,
-                                            @RequestParam(required = false) String status) {
+                                            @RequestParam(required = false) String status,
+                                            @RequestParam(required = false) String keyword) {
         LambdaQueryWrapper<Apply> w = new LambdaQueryWrapper<>();
         w.eq(status != null && !status.isBlank(), Apply::getStatus, status)
+                .and(keyword != null && !keyword.isBlank(),
+                        wq -> wq.like(Apply::getApplyNo, keyword)
+                                .or().like(Apply::getApplicant, keyword))
                 .orderByDesc(Apply::getId);
         return Result.ok(PageQuery.toPageMap(service.page(new Page<>(query.getPage(), query.getSize()), w)));
     }

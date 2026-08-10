@@ -44,9 +44,17 @@ export interface OrgEmployee {
 /** 我的权限 */
 export interface PermissionInfo {
   /** 当前登录用户（后端 /api/org/permission 返回 user） */
-  user?: { id: number; account: string; name: string }
+  user?: { id: number; account: string; name: string; dept?: string; position?: string }
+  /** 权限来源角色名（系统管理/组长/组员） */
+  roles?: string[]
   menus: string[]
   permissions: string[]
+  /** 权限明细按模块分组（中文展示用） */
+  permissionGroups?: {
+    module: string
+    moduleName: string
+    items: { code: string; name: string }[]
+  }[]
 }
 
 export interface PageQuery {

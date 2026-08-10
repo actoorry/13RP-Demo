@@ -686,7 +686,7 @@ CREATE TABLE IF NOT EXISTS todo_subscription (
     id         BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '订阅 id',
     board_type VARCHAR(20)  DEFAULT NULL COMMENT 'CRM/采购/销售/财务',
     sub_type   VARCHAR(50)  DEFAULT NULL COMMENT '订阅类型',
-    config_json JSON        DEFAULT NULL COMMENT '配置（阀值）',
+    config_json VARCHAR(500) DEFAULT NULL COMMENT '配置（阀值）JSON 字符串（前端按 String 处理，JSON 列会拒绝空串/非 JSON 导致 500）',
     owner_id   BIGINT       DEFAULT 0 COMMENT '订阅人 id',
     enabled    TINYINT      DEFAULT 1 COMMENT '启用'
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COMMENT '四板块订阅';

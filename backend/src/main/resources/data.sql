@@ -126,12 +126,12 @@ INSERT IGNORE INTO base_account (id, name, code, status, remark) VALUES
 -- ---------------- 产品主数据（base_product：品名→牌号→材质树） ----------------
 INSERT IGNORE INTO base_product (id, account_id, name, grade, material, spec, brand_origin, parent_id, sort, status) VALUES
 (1, 1, '电解铜', NULL, NULL, NULL, NULL, 0, 1, 1),
-(2, 1, '电解铜', '1#', NULL, NULL, NULL, 1, 1, 1),
-(3, 1, '电解铜', '1#', 'Cu', NULL, NULL, 2, 1, 1),
+(2, 1, '1#', '1#', NULL, NULL, NULL, 1, 1, 1),
+(3, 1, 'Cu', '1#', 'Cu', NULL, NULL, 2, 1, 1),
 (4, 1, '电解铜', NULL, NULL, '1吨/捆', NULL, 1, 2, 1),
 (5, 1, '电解铜', NULL, NULL, NULL, '北方铜业', 1, 3, 1),
 (6, 1, '电解锌', NULL, NULL, NULL, NULL, 0, 2, 1),
-(7, 1, '电解锌', '0#', 'Zn', NULL, NULL, 6, 1, 1);
+(7, 1, 'Zn', '0#', 'Zn', NULL, NULL, 6, 1, 1);
 
 -- ---------------- 材质元素（base_material_element） ----------------
 INSERT IGNORE INTO base_material_element (id, symbol, sort, common_value, range_min, range_max, grade_independent) VALUES

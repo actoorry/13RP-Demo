@@ -24,10 +24,15 @@ const STATUS_OPTIONS = [
 const columns: TableColumn[] = [
   { prop: 'id', label: 'ID', width: '70px' },
   { prop: 'supplierName', label: '供应商', minWidth: '180px' },
-  { prop: 'balance', label: '应付余额', width: '130px', slot: 'balance' },
+  { prop: 'balance', label: '应付余额', width: '140px', align: 'right', slot: 'balance' },
   { prop: 'dueDate', label: '到期日期', width: '130px' },
   { prop: 'status', label: '状态', width: '100px', slot: 'status' },
 ]
+
+function fmtMoney(v?: number): string {
+  if (v == null || Number.isNaN(Number(v))) return '-'
+  return Number(v).toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
 
 async function fetchList() {
   loading.value = true
@@ -166,7 +171,7 @@ onMounted(fetchList)
       @size-change="handleSizeChange"
     >
       <template #balance="{ row }">
-        <span class="mono">{{ row.balance ?? '-' }}</span>
+        <span class="mono">{{ fmtMoney(row.balance) }}</span>
       </template>
       <template #status="{ row }">
         <el-tag :type="row.status === 'PAID' ? 'success' : 'warning'" size="small">

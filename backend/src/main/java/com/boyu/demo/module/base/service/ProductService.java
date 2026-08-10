@@ -25,6 +25,7 @@ public class ProductService extends ServiceImpl<ProductMapper, Product> {
     public List<Map<String, Object>> buildTree(Long accountId) {
         List<Product> all = lambdaQuery()
                 .eq(accountId != null, Product::getAccountId, accountId)
+                .eq(Product::getStatus, 1)
                 .orderByAsc(Product::getSort)
                 .list();
         Map<Long, List<Product>> byParent = all.stream()

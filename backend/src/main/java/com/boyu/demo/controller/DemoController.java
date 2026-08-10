@@ -49,7 +49,7 @@ public class DemoController {
         return triggerEvent(str(body, "eventType"), intVal(body, "duration", 5));
     }
 
-    /** WebSocket 便捷重载：携带 eventType 与 duration（供应商缺货持续天数）。 */
+    /** WebSocket 便捷重载：携带 eventType 与 duration（模拟宇宙初始事件：断供持续天数）。 */
     public Map<String, Object> triggerEvent(String eventType, int duration) {
         try {
             mockDataService.injectSupplierShortage(duration);

@@ -62,9 +62,8 @@ public class InboundController {
     @PostMapping
     @PreAuthorize("hasAuthority('inventory:inbound:add')")
     public Result<Void> create(@RequestBody InventoryInbound entity) {
-        if (entity.getStatus() == null || entity.getStatus().isBlank()) {
-            entity.setStatus("CREATED");
-        }
+        // 强制初始状态（忽略请求体传入的 status），防止通过 API 越权流转
+        entity.setStatus("CREATED");
         service.save(entity);
         return Result.ok();
     }

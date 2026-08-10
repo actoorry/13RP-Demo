@@ -60,9 +60,8 @@ public class OrderController {
     @PostMapping
     @PreAuthorize("hasAuthority('purchase:order:add')")
     public Result<Void> create(@RequestBody PurchaseOrder entity) {
-        if (entity.getStatus() == null || entity.getStatus().isBlank()) {
-            entity.setStatus("PENDING_APPROVE");
-        }
+        // 强制初始状态（忽略请求体传入的 status），防止通过 API 越权流转
+        entity.setStatus("PENDING_APPROVE");
         service.save(entity);
         return Result.ok();
     }

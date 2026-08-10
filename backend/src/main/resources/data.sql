@@ -179,12 +179,12 @@ INSERT IGNORE INTO org_group (id, group_name, owner_id, owner_name) VALUES
 (2, '华南销售二组', 1, '李经理');
 
 INSERT IGNORE INTO org_group_customer (id, group_id, customer_id, customer_name, relation) VALUES
-(1, 1, 1, '苏州应用工厂', '主客'),
-(2, 2, 2, '广州深加工基地', '主客');
+(1, 1, 1, '沈阳应用工厂', '主客'),
+(2, 2, 2, '营口深加工基地', '主客');
 
 INSERT IGNORE INTO org_my_customer (id, owner_id, customer_id, customer_name, relation) VALUES
-(1, 1, 1, '苏州应用工厂', '主客'),
-(2, 1, 2, '广州深加工基地', '次客');
+(1, 1, 1, '沈阳应用工厂', '主客'),
+(2, 1, 2, '营口深加工基地', '次客');
 
 -- ---------------- 供应商分级（purchase_supplier_grade） ----------------
 INSERT IGNORE INTO purchase_supplier_grade (id, supplier_id, supplier_name, grade, remark) VALUES
@@ -338,8 +338,8 @@ INSERT IGNORE INTO crm_cert (id, customer_id, cert_type, expire_date, registered
 (2, 2, '营业执照', '2028-06-30', 8000000.00, '91440101MA2YYYY02', 1, 1);
 
 INSERT IGNORE INTO crm_customer (id, name, source, company_type, phone, tel, email, address, industry, `level`, owner_id, follow_flag, converted_flag) VALUES
-(1, '苏州应用工厂', '线下展会', '制造', '13811110001', '0512-88886666', 'sz@example.com', '苏州市工业园区', '有色金属加工', 'A', 1, 1, 1),
-(2, '广州深加工基地', '转介绍', '制造', '13922220002', '020-66668888', 'gz@example.com', '广州市黄埔区', '有色金属深加工', 'B', 1, 1, 1);
+(1, '沈阳应用工厂', '线下展会', '制造', '13811110001', '024-88886666', 'sy@example.com', '沈阳市浑南区', '有色金属加工', 'A', 1, 1, 1),
+(2, '营口深加工基地', '转介绍', '制造', '13922220002', '0417-66668888', 'yk@example.com', '营口市鲅鱼圈区', '有色金属深加工', 'B', 1, 1, 1);
 
 INSERT IGNORE INTO crm_lead (id, name, source, company_type, phone, email, industry, `level`, owner_id, follow_flag, converted_flag) VALUES
 (1, '宁波压延有限公司', '广告投放', '制造', '13733330003', 'nb@example.com', '压延加工', 'B', 1, 1, 0),

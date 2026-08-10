@@ -26,7 +26,7 @@ public class MockDataService {
     private static final List<String> NODE_IDS = List.of("BAOTOU", "GANZHOU", "NINGBO", "SUZHOU", "GUANGZHOU");
     private static final Map<String, String> NODE_NAMES = Map.of(
             "BAOTOU", "北方铜业", "GANZHOU", "中原铜业", "NINGBO", "南方铜业",
-            "SUZHOU", "苏州应用工厂", "GUANGZHOU", "广州深加工基地");
+            "SUZHOU", "沈阳应用工厂", "GUANGZHOU", "营口深加工基地");
     private static final Map<String, String> NODE_KINDS = Map.of(
             "BAOTOU", "supplier", "GANZHOU", "supplier", "NINGBO", "supplier",
             "SUZHOU", "factory", "GUANGZHOU", "base");

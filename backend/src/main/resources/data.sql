@@ -131,7 +131,37 @@ INSERT IGNORE INTO base_product (id, account_id, name, grade, material, spec, br
 (4, 1, '电解铜', NULL, NULL, '1吨/捆', NULL, 1, 2, 1),
 (5, 1, '电解铜', NULL, NULL, NULL, '北方铜业', 1, 3, 1),
 (6, 1, '电解锌', NULL, NULL, NULL, NULL, 0, 2, 1),
-(7, 1, 'Zn', '0#', 'Zn', NULL, NULL, 6, 1, 1);
+(7, 1, 'Zn', '0#', 'Zn', NULL, NULL, 6, 1, 1),
+(30, 1, '电解铝', NULL, NULL, NULL, NULL, 0, 3, 1),
+(31, 1, '电解镍', NULL, NULL, NULL, NULL, 0, 4, 1),
+(32, 1, '电解锡', NULL, NULL, NULL, NULL, 0, 5, 1),
+(33, 1, '电解铅', NULL, NULL, NULL, NULL, 0, 6, 1),
+(34, 1, '阴极铜', NULL, NULL, NULL, NULL, 0, 7, 1),
+(35, 1, '粗铜', NULL, NULL, NULL, NULL, 0, 8, 1),
+(36, 1, '铜杆', NULL, NULL, NULL, NULL, 0, 9, 1),
+(37, 1, '锌锭', NULL, NULL, NULL, NULL, 0, 10, 1),
+(38, 1, '铝锭', NULL, NULL, NULL, NULL, 0, 11, 1),
+(39, 1, '黄铜板', NULL, NULL, NULL, NULL, 0, 12, 1),
+(40, 1, 'A00', 'A00', NULL, NULL, NULL, 30, 1, 1),
+(41, 1, 'Ni9990', 'Ni9990', NULL, NULL, NULL, 31, 1, 1),
+(42, 1, 'Sn99.90', 'Sn99.90', NULL, NULL, NULL, 32, 1, 1),
+(43, 1, 'Pb99.994', 'Pb99.994', NULL, NULL, NULL, 33, 1, 1),
+(44, 1, 'Cu-CATH-1', 'Cu-CATH-1', NULL, NULL, NULL, 34, 1, 1),
+(45, 1, 'Cu99.0', 'Cu99.0', NULL, NULL, NULL, 35, 1, 1),
+(46, 1, 'TU1', 'TU1', NULL, NULL, NULL, 36, 1, 1),
+(47, 1, 'Zn99.995', 'Zn99.995', NULL, NULL, NULL, 37, 1, 1),
+(48, 1, 'A199.70', 'A199.70', NULL, NULL, NULL, 38, 1, 1),
+(49, 1, 'H62', 'H62', NULL, NULL, NULL, 39, 1, 1),
+(50, 1, 'Al', 'A00', 'Al', NULL, NULL, 40, 1, 1),
+(51, 1, 'Ni', 'Ni9990', 'Ni', NULL, NULL, 41, 1, 1),
+(52, 1, 'Sn', 'Sn99.90', 'Sn', NULL, NULL, 42, 1, 1),
+(53, 1, 'Pb', 'Pb99.994', 'Pb', NULL, NULL, 43, 1, 1),
+(54, 1, 'Cu', 'Cu-CATH-1', 'Cu', NULL, NULL, 44, 1, 1),
+(55, 1, 'Cu', 'Cu99.0', 'Cu', NULL, NULL, 45, 1, 1),
+(56, 1, 'Cu', 'TU1', 'Cu', NULL, NULL, 46, 1, 1),
+(57, 1, 'Zn', 'Zn99.995', 'Zn', NULL, NULL, 47, 1, 1),
+(58, 1, 'Al', 'A199.70', 'Al', NULL, NULL, 48, 1, 1),
+(59, 1, 'CuZn', 'H62', 'CuZn', NULL, NULL, 49, 1, 1);
 
 -- ---------------- 材质元素（base_material_element） ----------------
 INSERT IGNORE INTO base_material_element (id, symbol, sort, common_value, range_min, range_max, grade_independent) VALUES
@@ -190,7 +220,9 @@ INSERT IGNORE INTO org_my_customer (id, owner_id, customer_id, customer_name, re
 INSERT IGNORE INTO purchase_supplier_grade (id, supplier_id, supplier_name, grade, remark) VALUES
 (1, 1, '北方铜业', '战略', '核心供应商，决策演示缺货事件来源'),
 (2, 2, '中原铜业', '优选', '备用应急产能'),
-(3, 3, '南方铜业', '考察', '潜在替代供应商');
+(3, 3, '南方铜业', '考察', '潜在替代供应商'),
+(4, 4, '营口有色金属', '考察', '新引入供应商'),
+(5, 5, '沈阳铜业加工', '优选', '区域供应商');
 
 -- ---------------- 预测预案（purchase_forecast） ----------------
 INSERT IGNORE INTO purchase_forecast (id, plan_type, plan_name, period_start, period_end, forecast_value, creator) VALUES
@@ -213,7 +245,10 @@ INSERT IGNORE INTO purchase_apply (id, apply_no, inquiry_id, status, applicant, 
 -- 现款后货 → WAIT_PAY（待付款）；先货后款 → WAIT_INBOUND（待入库）
 INSERT IGNORE INTO purchase_order (id, order_no, source, settle_method, supplier_id, supplier_name, product_name, qty, pay_amount, status, settlement_status, creator) VALUES
 (1, 'PO-20260804-001', '销采部', '现款后货', 2, '中原铜业', '电解铜', 1200.00, 1560000.00, 'APPROVED', 'WAIT_PAY', '李采购'),
-(2, 'PO-20260804-002', '客服部', '先货后款', 1, '北方铜业', '电解锌', 800.00, 960000.00, 'APPROVED', 'WAIT_INBOUND', '李采购');
+(2, 'PO-20260804-002', '客服部', '先货后款', 1, '北方铜业', '电解锌', 800.00, 960000.00, 'APPROVED', 'WAIT_INBOUND', '李采购'),
+(7, 'PO-20260810-101', '销采部', '现款后货', 1, '北方铜业', '电解铝', 200.00, 520000.00, 'PENDING_APPROVE', 'WAIT_INBOUND', '李采购'),
+(8, 'PO-20260810-102', '销采部', '先货后款', 2, '中原铜业', '电解镍', 50.00, 750000.00, 'APPROVED', 'WAIT_PAY', '李采购'),
+(9, 'PO-20260810-103', '客服部', '现款后货', 3, '南方铜业', '电解锡', 30.00, 720000.00, 'PENDING_APPROVE', 'WAIT_INBOUND', '李采购');
 
 -- ---------------- 进项欠票（purchase_debt） ----------------
 INSERT IGNORE INTO purchase_debt (id, inbound_no, inbound_id, invoice_no, invoice_id, supplier_id, supplier_name, amount, status) VALUES
@@ -237,7 +272,10 @@ INSERT IGNORE INTO finance_arrival (id, account_id, org_id, amount, arrival_time
 (1, 1, 1, 500000.00, '2026-08-04 09:00:00', '财务李');
 
 INSERT IGNORE INTO finance_invoice (id, invoice_no, invoice_type, customer_id, product_code, product_name, amount, status, auditor) VALUES
-(1, 'INV-20260804-001', '进项', 0, 'CU-1-50', '电解铜', 1560000.00, 'APPROVED', '财务王');
+(1, 'INV-20260804-001', '进项', 0, 'CU-1-50', '电解铜', 1560000.00, 'APPROVED', '财务王'),
+(2, 'INV-20260810-001', '进项', 1, NULL, '电解铝', 520000.00, 'CREATED', NULL),
+(3, 'INV-20260810-002', '销项', 2, NULL, '电解镍', 750000.00, 'APPROVED', '李采购'),
+(4, 'INV-20260810-003', '进项', 1, NULL, '电解锡', 720000.00, 'APPROVED', '王财务');
 
 -- ---------------- CRM 示例（crm_activity） ----------------
 INSERT IGNORE INTO crm_activity (id, customer_id, contact_id, activity_type, relation, product_name, price, pre_need_time, content, creator) VALUES
@@ -271,7 +309,12 @@ INSERT IGNORE INTO sale_order (id, order_no, customer_id, product_name, qty, amo
 -- ---------------- 业务日报（sale_daily_report） ----------------
 INSERT IGNORE INTO sale_daily_report (id, report_date, contact_cnt, lead_cnt, deal_cnt, org_id) VALUES
 (1, '2026-08-04', 20, 8, 3, 1),
-(2, '2026-08-05', 25, 10, 4, 1);
+(2, '2026-08-05', 25, 10, 4, 1),
+(3, '2026-08-06', 22, 9, 3, 0),
+(4, '2026-08-07', 28, 12, 5, 0),
+(5, '2026-08-08', 26, 11, 4, 0),
+(6, '2026-08-09', 32, 15, 6, 0),
+(7, '2026-08-10', 30, 14, 7, 0);
 
 -- ---------------- 开票申请（sale_invoice_apply：APPLIED→PENDING→ISSUED） ----------------
 INSERT IGNORE INTO sale_invoice_apply (id, apply_no, customer_id, invoice_no, status, creator) VALUES
@@ -283,7 +326,12 @@ INSERT IGNORE INTO sale_invoice_apply (id, apply_no, customer_id, invoice_no, st
 -- 电解锌库龄 20 天 ≥ 15 → 红色预警；电解铜 6 天不预警
 INSERT IGNORE INTO inventory_stock (id, product_name, grade, spec, org_id, actual_qty, transit_qty, stock_age, age_warn_days) VALUES
 (2, '电解锌', '0#', '1吨/捆', 1, 300.00, 0.00, 20, 15),
-(3, '电解铜', '1#', '1吨/捆', 1, 800.00, 0.00, 6, 15);
+(3, '电解铜', '1#', '1吨/捆', 1, 800.00, 0.00, 6, 15),
+(4, '电解铝', 'A00', NULL, 0, 650.00, 0.00, 8, 15),
+(5, '电解镍', 'Ni9990', NULL, 0, 180.00, 0.00, 5, 15),
+(6, '电解锡', 'Sn99.90', NULL, 0, 95.00, 0.00, 12, 15),
+(7, '铜杆', 'TU1', NULL, 0, 420.00, 200.00, 3, 15),
+(8, '铝锭', 'A199.70', NULL, 0, 300.00, 0.00, 18, 15);
 
 -- ---------------- 安全库存设计（inventory_safe_stock） ----------------
 INSERT IGNORE INTO inventory_safe_stock (id, product_name, material, org_id, service_level, z_value, replenish_cycle, economic_qty, order_point_qty, max_qty, safe_stock) VALUES
@@ -322,7 +370,10 @@ INSERT IGNORE INTO finance_expense (id, expense_no, customer_id, product_name, a
 
 INSERT IGNORE INTO finance_lab_fee (id, inbound_id, lab_name, sample_no, element, lab_fee, report_status, pay_status, voucher_no) VALUES
 (1, 1, '博宇检测中心', 'S-20260804-001', 'Cu', 1200.00, 'PASS', 'PAID', 'VCH-20260804-001'),
-(2, 2, '博宇检测中心', 'S-20260805-001', 'Zn', 1000.00, 'PENDING', 'UNPAID', NULL);
+(2, 2, '博宇检测中心', 'S-20260805-001', 'Zn', 1000.00, 'PENDING', 'UNPAID', NULL),
+(3, NULL, '沈阳质检中心', 'S-20260810-003', 'Sn', 1200.00, 'PENDING', 'UNPAID', NULL),
+(4, NULL, '沈阳质检中心', 'S-20260810-004', 'Al', 1500.00, 'PASS', 'PAID', NULL),
+(5, NULL, '沈阳质检中心', 'S-20260810-005', 'Ni', 1800.00, 'FAIL', 'UNPAID', NULL);
 
 INSERT IGNORE INTO finance_ar_ap (id, party_type, party_id, account_id, org_id, receivable, payable, balance) VALUES
 (1, 'CUSTOMER', 1, 1, 1, 1560000.00, 0.00, 1560000.00),
@@ -335,7 +386,9 @@ INSERT IGNORE INTO crm_variety (id, customer_id, variety_type, product_name, gra
 
 INSERT IGNORE INTO crm_cert (id, customer_id, cert_type, expire_date, registered_capital, tax_no, verified_flag, trade_allowed_flag) VALUES
 (1, 1, '营业执照', '2029-12-31', 10000000.00, '91320500MA1XXXX01', 1, 1),
-(2, 2, '营业执照', '2028-06-30', 8000000.00, '91440101MA2YYYY02', 1, 1);
+(2, 2, '营业执照', '2028-06-30', 8000000.00, '91440101MA2YYYY02', 1, 1),
+(3, 1, '生产许可证', '2029-06-30', 5000000.00, 'SYSC001', 1, 1),
+(4, 2, '质量管理体系认证', '2028-12-31', 6000000.00, 'YKISO001', 1, 1);
 
 INSERT IGNORE INTO crm_customer (id, name, source, company_type, phone, tel, email, address, industry, `level`, owner_id, follow_flag, converted_flag) VALUES
 (1, '沈阳应用工厂', '线下展会', '制造', '13811110001', '024-88886666', 'sy@example.com', '沈阳市浑南区', '有色金属加工', 'A', 1, 1, 1),

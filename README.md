@@ -1,97 +1,78 @@
 # 13RP-Demo
 
-**13RP（博宇宙十三维决策操作系统）** P0 阶段决策演示项目。
+> 博宇宙十三维决策操作系统（13RP）P0 阶段决策演示项目。
 
-P0 = 博宇企业管理平台九大业务域管理端复现（V0.4 五模块：系统基础 / 采购 / 销售 / 库存 / 财务 / 人力）+ 国内场景决策演示（电解铜断供推演）。
+## 项目介绍
 
-本项目为**可运行的完整 Demo**：后端 Spring Boot 提供管理端九域 REST API（JWT 认证 + 权限码）+ 决策演示 WebSocket；前端 Vue3 提供管理端 25+ 页面 + 决策演示三屏驾驶舱。本机启动后，同一局域网内的其他电脑可通过浏览器访问。
+13RP 是一套面向产业链、生态圈、政府与国际组织的多宇宙资源规划与决策系统。它将决策过程划分为十三个维度，分为三层：物理现实层（1-5 维，数据底座）、平行模拟层（6-10 维，推演与寻优）、愿景驱动层（11-13 维，方向决策）。与传统管理软件"记录已发生的事"不同，13RP 回答的是"如果发生 X 该怎么办"——先虚拟验证，再落地执行。
+
+本项目为 P0 阶段可运行的演示系统，包含两部分：
+
+- **管理端**：九大业务域功能复现（系统基础 / 采购 / 销售 / 库存 / 财务 / 人力），覆盖企业日常业务全流程。
+- **决策演示**：国内铜材供应场景的三屏驾驶舱演示——模拟上游停产事件，系统自动完成路径推演、方案寻优、博弈对抗，输出可执行指令。
+
+## 功能特性
+
+**管理端（六大模块）**
+
+| 模块 | 功能 |
+|------|------|
+| 系统基础 | 账套管理、产品主数据（品名/牌号/材质三级树）、材质元素、包装标准、主营品种、流程引擎、待办事宜、数据概览 |
+| 采购 | 预测预案、询价管理、采购申请、审批流转、待审批订单、进项欠票、应付账款、供应商分级 |
+| 销售 | 销售订单、业务日报、开票申请；CRM 客户管理（品种/客户/活动/证照风控/线索转化） |
+| 库存 | 入库、出库、调拨、盘点、批号管理、安全库存预警 |
+| 财务 | 到账公告、发票管理、费用分摊、化验费全流程、应收应付 |
+| 人力 | 组织架构、员工档案、岗位职责、权限分配、人员划拨 |
+
+**决策演示（三屏驾驶舱）**
+
+- 创建模拟宇宙：注入初始事件（供应商停产、原料断供）
+- 实时看板：订单交付率逐秒变化、阈值报警
+- 路径推演：三百余条供应路径批量计算、地理地图可视化
+- 方案寻优：多目标生成非劣解（备用供应商 / 战略库存 / 替代材料）
+- 博弈对抗：多因素组合推演胜率，支持交互调整
+- 降维输出：最优解转换为逐条可执行指令
 
 ## 技术栈
 
 | 端 | 技术 |
 |----|------|
-| 后端 | Java 21 · Spring Boot 3.3.x · MyBatis-Plus · Spring Security JWT · WebSocket · MySQL 8 · Redis（可降级） |
-| 前端 | Vue3 · Vite6 · TypeScript · Element Plus · Pinia · ECharts |
-| 数据 | MySQL 8（现有容器 `mysql8`，库 `boyu_demo`）· Redis 7（现有容器 `redis`，非硬依赖，连不上自动降级查库） |
+| 后端 | Java 21 · Spring Boot 3.3 · MyBatis-Plus · Spring Security JWT · WebSocket |
+| 前端 | Vue 3 · Vite · TypeScript · Element Plus · Pinia · ECharts |
+| 数据 | MySQL 8 · Redis 7（可降级） |
+
+## 快速开始
+
+环境要求：JDK 21、Maven 3.9、Node.js 20+、MySQL 8（本机环境细节见 `CLAUDE.md`）。
+
+```bash
+# 后端（端口 8080）
+cd backend
+mvn package -DskipTests
+java -jar target/rd13-demo-0.4.0.jar
+
+# 前端（端口 5173）
+cd frontend
+npm install
+npm run dev
+```
+
+浏览器打开 `http://localhost:5173/`，默认账号 `admin` / `123456`。
 
 ## 目录结构
 
 ```
 13RP-Demo/
-├── backend/        # Spring Boot 后端（端口 8080）
+├── backend/        # Spring Boot 后端（REST API + WebSocket + 演示数据）
 │   └── src/main/resources/
-│       ├── schema.sql   # 建表（幂等，启动自动执行）
-│       ├── data.sql     # 种子数据（幂等，启动自动执行）
-│       └── demo-data/   # 决策演示预计算 JSON（342 路径 / 3 方案 / 4 因素 / 5 指令）
-├── frontend/       # Vue3 前端（Vite dev 端口 5173，/api、/ws 代理到 8080）
-├── scripts/        # 本机构建辅助脚本（build.cmd）
-├── CLAUDE.md       # 环境路径与构建约定
-└── README.md
+│       ├── schema.sql   # 建表（幂等）
+│       ├── data.sql     # 种子数据（幂等）
+│       └── demo-data/   # 决策演示预计算数据
+├── frontend/       # Vue 3 前端（管理端页面 + 决策演示）
+├── scripts/        # 构建辅助脚本
+└── CLAUDE.md       # 环境与构建约定
 ```
-
-## 本机启动说明
-
-### 0. 环境要求
-
-- JDK 21：`C:\Users\Administrator\.jdks\ms-21.0.12`
-- Maven 3.9.9：IDEA bundled（`D:\IDEA\IntelliJ IDEA 2025.1\plugins\maven\lib\maven3`）
-- Node.js ≥ 20（本机 24.18.0）、npm 11
-- MySQL 8 容器 `mysql8`（root/123456，库 `boyu_demo` 自动初始化）；Redis 容器 `redis`（可选）
-
-### 1. 后端
-
-```bash
-cd backend
-mvn package -DskipTests                 # 构建 → target/rd13-demo-0.4.0.jar
-java -jar target/rd13-demo-0.4.0.jar    # 运行（端口 8080）
-```
-
-健康检查：
-
-```bash
-curl http://localhost:8080/api/health   # 期望 {"ok":true}
-```
-
-> 若 `mvn` / `java` 不在 PATH 中，可执行 `scripts\build.cmd backend`（脚本内置本机 JDK/Maven 路径）完成构建。
-
-### 2. 前端
-
-```bash
-cd frontend
-npm install         # 依赖（已配置淘宝镜像 registry.npmmirror.com）
-npm run dev         # 开发（端口 5173，已配置 host 0.0.0.0 监听所有网卡）
-npm run build       # 生产构建（dist/）
-```
-
-浏览器打开 `http://localhost:5173/`。
-
-## 局域网访问
-
-服务在本机启动后，同一局域网内的其他电脑可通过浏览器直接访问：
-
-```
-http://<本机IP>:5173
-```
-
-登录账号：`admin` / `123456`
-
-### 准备工作（一次即可）
-
-1. **放行防火墙端口**（Windows 需管理员执行一次）：
-
-```powershell
-netsh advfirewall firewall add rule name="13RP-Demo Frontend 5173" dir=in action=allow protocol=TCP localport=5173
-netsh advfirewall firewall add rule name="13RP-Demo Backend 8080" dir=in action=allow protocol=TCP localport=8080
-```
-
-2. **确认本机 IP**：
-
-```powershell
-ipconfig        # 查看 IPv4 地址（如 192.168.2.52）
-```
-
-3. **确认访问**：在本机浏览器打开 `http://<本机IP>:5173` 验证一次；其他电脑需与演示机在同一网段（同一 WiFi / 网线）。
 
 ## 版本
 
-- 前端 / 后端：V0.4
+前端 / 后端：V0.4

@@ -45,13 +45,18 @@
 
 环境要求：JDK 21、Maven 3.9、Node.js 20+、MySQL 8（本机环境细节见 `CLAUDE.md`）。
 
+> 若 `java` / `mvn` 不在系统 PATH 中（命令行报"不是可识别的命令"），可执行 `scripts\build.cmd backend`（脚本内置本机 JDK/Maven 路径），或参考 `CLAUDE.md` 中的完整路径。
+
 ```bash
-# 后端（端口 8080）
+# 1. 进入项目目录（克隆或解压后）
+cd 13RP-Demo
+
+# 2. 后端（端口 8080）
 cd backend
 mvn package -DskipTests
 java -jar target/rd13-demo-0.4.0.jar
 
-# 前端（端口 5173）
+# 3. 前端（端口 5173，另开一个终端）
 cd frontend
 npm install
 npm run dev

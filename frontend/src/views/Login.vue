@@ -38,7 +38,7 @@ async function handleLogin() {
   <div class="login-page">
     <div class="login-card fade-up">
       <div class="login-brand">
-        <div class="login-title">13RP 管理端</div>
+        <div class="login-title">博宇宙十三维决策操作系统</div>
         <div class="login-subtitle">博宇企业管理平台 · 通用五模块</div>
       </div>
 

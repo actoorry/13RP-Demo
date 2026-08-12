@@ -66,7 +66,7 @@ async function handleLogout() {
   <div class="admin-layout">
     <header class="admin-header">
       <div class="admin-header-left">
-        <span class="admin-title">13RP 管理端</span>
+        <span class="admin-title">博宇宙十三维决策操作系统</span>
         <span class="admin-subtitle">博宇企业管理平台</span>
       </div>
 

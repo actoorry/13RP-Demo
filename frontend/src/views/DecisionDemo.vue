@@ -100,8 +100,8 @@ watch(
     <!-- 顶栏：左侧品牌标题，右侧返回管理端 + 主题切换 -->
     <header class="demo-topbar">
       <div class="demo-brand">
-        <span class="demo-brand-title">13RP 决策演示</span>
-        <span class="demo-brand-sub">博宇宙十三维决策操作系统</span>
+        <span class="demo-brand-title">博宇宙十三维决策操作系统</span>
+        <span class="demo-brand-sub">13RP · 决策演示</span>
       </div>
       <div class="demo-theme-toggle">
         <el-tooltip content="返回管理端" placement="bottom">

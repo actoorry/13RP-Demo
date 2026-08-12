@@ -2,7 +2,7 @@
   "name": "rd13-demo-frontend",
   "version": "0.3.0",
   "private": true,
-  "description": "13RP 决策演示前端（Vue3 + Vite6 + Element Plus）",
+  "description": "博宇宙十三维决策操作系统（13RP）演示前端（Vue3 + Vite6 + Element Plus）",
   "type": "module",
   "scripts": {
     "dev": "vite",
